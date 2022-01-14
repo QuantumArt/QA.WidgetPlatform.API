@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using QA.DotNetCore.Engine.Abstractions;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
-using QA.DotNetCore.Engine.Abstractions.Wildcard;
 using QA.DotNetCore.Engine.QpData;
+using QA.DotNetCore.Engine.Widgets;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -41,37 +41,9 @@ namespace QA.WidgetPlatform.Api.Controllers
 
             var targetingFilter = CreateMtsFilter(targeting);
 
-            #region копипаста из QA.DotNetCore.Engine.Abstractions.AbstractItemStorage, плохо спроектирован интерфейс IStartPage, к которому идёт привязка логики по стартовой странице
-
-            var bindings = new List<string>();
-            Dictionary<string, UniversalAbstractItem> startPageByDnsPatternMappings = new Dictionary<string, UniversalAbstractItem>();
-            foreach (var rootChild in storage.Root.GetChildren(targetingFilter).OfType<UniversalAbstractItem>())
-            {
-                if (rootChild.UntypedFields.Keys.Any(k => k.ToLowerInvariant() == "bindings"))
-                {
-                    var key = rootChild.UntypedFields.Keys.First(k => k.ToLowerInvariant() == "bindings");
-
-                    if (rootChild.UntypedFields[key] is string dnsString)
-                    {
-                        var dnsArray = dnsString
-                            .Split(new char[] { '\n', '\r', ',' }, StringSplitOptions.RemoveEmptyEntries)
-                            .Select(_ => _.Trim())
-                            .ToArray();
-
-                        bindings.AddRange(dnsArray);
-
-                        Array.ForEach(dnsArray, x => startPageByDnsPatternMappings[x] = rootChild);
-                    }
-                }
-            }
-
-            var matcher = new WildcardMatcher(WildcardMatchingOption.FullMatch, bindings);
-            var pattern = matcher.MatchLongest(dnsName);
-            var startPage = pattern != null ? startPageByDnsPatternMappings[pattern] : null;
-            #endregion
-
+            var startPage = storage.GetStartPage<UniversalPage>(dnsName, targetingFilter);
             if (startPage == null)
-                throw new System.Exception("404");//todo
+                throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
             return new SiteNode(startPage, new OnlyPagesFilter() + targetingFilter);
         }
@@ -89,13 +61,13 @@ namespace QA.WidgetPlatform.Api.Controllers
         {
             var storage = _abstractItemStorageProvider.Get();
 
-            var node = storage.Get(nodeId);
+            var node = storage.Get<UniversalPage>(nodeId);
 
-            if (node == null || !(node is UniversalAbstractItem))
-                throw new System.Exception("404");//todo
+            if (node == null)
+                throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
 
-            return new SiteNodeDetails(node as UniversalAbstractItem);
+            return new SiteNodeDetails(node);
         }
 
         /// <summary>
@@ -111,10 +83,10 @@ namespace QA.WidgetPlatform.Api.Controllers
         public IDictionary<string, WidgetDetails[]> WidgetsForPage(int pageId, [Bind(Prefix = "t")] [FromQuery] IDictionary<string, string> targeting, [FromQuery] string[] zones)
         {
             var storage = _abstractItemStorageProvider.Get();
-            var page = storage.Get(pageId);
+            var page = storage.Get<UniversalPage>(pageId);
 
             if (page == null)
-                throw new System.Exception("404");//todo
+                throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
             var targetingFilter = new OnlyWidgetsFilter() + CreateMtsFilter(targeting);
 
@@ -130,11 +102,11 @@ namespace QA.WidgetPlatform.Api.Controllers
                 if (atLeastOneRecursiveOrGlobalZone)
                 {
                     //пройдём по всей иерархии вверх до стартовой страницы, чтобы достать оттуда виджеты в рекурсивных или глобальных зонах
-                    var currentPage = page;
+                    IAbstractItem currentPage = page;
                     while (currentPage != null)
                     {
                         var zonesToSearch = currentPage.Id != page.Id ? 
-                            (PageIsStart(currentPage) ? 
+                            (PageContainsGlobalWidgets(currentPage) ? 
                                 zones.Where(z => ZoneIsRecursive(z) || ZoneIsGlobal(z)).ToArray() : 
                                 zones.Where(z => ZoneIsRecursive(z)).ToArray()) :
                             zones;
@@ -170,46 +142,68 @@ namespace QA.WidgetPlatform.Api.Controllers
             return result;
         }
 
+        /// <summary>
+        /// Прогрев
+        /// </summary>
+        /// <returns>id корневой страницы</returns>
+        [HttpGet("warmup")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public int WarmUp()
+        {
+            var storage = _abstractItemStorageProvider.Get();
+            return storage.Root.Id;
+        }
+
         private Dictionary<string, WidgetDetails[]> ChildWidgetsGroupedByZone(IAbstractItem item, ITargetingFilter filter, IEnumerable<string> zones = null)
         {
             return item
-                    .GetChildren(filter)
+                    .GetChildren<UniversalWidget>(filter)
                     .OrderBy(ai => ai.SortOrder)
-                    .Cast<UniversalAbstractItem>()
-                    .Where(w => w.UntypedFields.ContainsKey("ZONENAME") && w.UntypedFields["ZONENAME"] != null  //по идее в библиотеках должен возвращаться UniversalAbstractWidget для виджетов, знание о том, как из UniversalAbstractItem достать виджетную зону должно быть там
-                        && (zones == null || zones.Contains(w.UntypedFields["ZONENAME"].ToString())))
-                    .GroupBy(w => w.UntypedFields["ZONENAME"].ToString())
+                    .Where(w => w.ZoneName != null && (zones == null || zones.Contains(w.ZoneName)))
+                    .GroupBy(w => w.ZoneName)
                     .ToDictionary(g => g.Key, g => g.Select(w => new WidgetDetails(w, abstractItem => ChildWidgetsGroupedByZone(abstractItem, filter))).ToArray());
         }
 
+        private static bool PageContainsGlobalWidgets(IAbstractItem ai)
+        {
+            // дурацкое определение для стартовой страницы, но сейчас это самое простое, возможно ничего лучше не придумать
+            return ai.Parent != null && ai.Parent.Parent == null; 
+        }
+
+        private static bool ZoneIsRecursive(string zoneName)
+        {
+            return WidgetZoneTypeQualifier.QualifyZone(zoneName) == WidgetZoneType.Recursive;
+        }
+
+        private static bool ZoneIsGlobal(string zoneName)
+        {
+            return WidgetZoneTypeQualifier.QualifyZone(zoneName) == WidgetZoneType.Global;
+        }
+
+        #region единственная МТС-ная специфика
+
         private static MtsRegionFilter CreateMtsFilter(IDictionary<string, string> currentTargeting)
         {
-            var idList = new List<int>();
-            if (currentTargeting.ContainsKey("region") && int.TryParse(currentTargeting["region"], out int regionId))
+            //для работы мтс-ного сайта нам нужно таргетироваться по региону
+            //ожидается, что в словаре значений таргетирования к нам придёт запись с ключом "region"
+            //и в значении будет список id: id текущего региона и всех родительских через запятую
+            List<int> idList;
+            if (currentTargeting.ContainsKey("region"))
             {
-                idList.Add(regionId);
-
-                //TODO: здесь надо добавить id всех предков этого региона в дереве регионов МТС
+                idList = currentTargeting["region"]
+                    .Split(',')
+                    .Select(t => int.TryParse(t, out int parsed) ? parsed : 0)
+                    .Where(id => id > 0)
+                    .ToList();
+            }
+            else
+            {
+                idList = new List<int>();
             }
 
             return new MtsRegionFilter(idList);
         }
 
-        private static bool PageIsStart(IAbstractItem ai)
-        {
-            return ai.Parent != null && ai.Parent.Parent == null; // дурацкое определение для стартовой страницы, но сейчас это самое простое
-        }
-
-        #region копипаста из QA.DotNetCore.Engine.Widgets.ComponentExtensions
-        private static bool ZoneIsRecursive(string zoneName)
-        {
-            return zoneName.StartsWith("Recursive");
-        }
-
-        private static bool ZoneIsGlobal(string zoneName)
-        {
-            return zoneName.StartsWith("Site");
-        }
         #endregion
     }
 }

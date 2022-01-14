@@ -51,6 +51,8 @@ namespace QA.WidgetPlatform.Api
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseMiddleware<StatusCodeExceptionHandler>();
+
             app.UseRouting();
 
             app.UseAuthorization();

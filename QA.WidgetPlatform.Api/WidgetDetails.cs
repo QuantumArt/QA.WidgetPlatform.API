@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace QA.WidgetPlatform.Api
 {
@@ -24,23 +23,22 @@ namespace QA.WidgetPlatform.Api
         [JsonIgnore]
         public int SortOrder { get; set; }
 
-        public WidgetDetails(UniversalAbstractItem item, Func<IAbstractItem, IDictionary<string, WidgetDetails[]>> getChildrenFunc) : base(item)
+        public WidgetDetails(UniversalWidget widget, Func<IAbstractItem, IDictionary<string, WidgetDetails[]>> getChildrenFunc) : base(widget)
         {
-            Zone = item.UntypedFields["ZONENAME"].ToString();
-            if (item.UntypedFields.ContainsKey("ALLOWEDURLPATTERNS") && item.UntypedFields["ALLOWEDURLPATTERNS"] != null)
-            {
-                AllowedUrlPatterns = item.UntypedFields["ALLOWEDURLPATTERNS"].ToString().Split(new char[] { '\n', '\r', ';', ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
-            }
-            if (item.UntypedFields.ContainsKey("DENIEDURLPATTERNS") && item.UntypedFields["DENIEDURLPATTERNS"] != null)
-            {
-                DeniedUrlPatterns = item.UntypedFields["DENIEDURLPATTERNS"].ToString().Split(new char[] { '\n', '\r', ';', ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
-            }
+            Zone = widget.ZoneName;
+            AllowedUrlPatterns = widget.AllowedUrlPatterns;
+            DeniedUrlPatterns = widget.DeniedUrlPatterns;
+            SortOrder = widget.SortOrder;
 
-            ChildWidgets = getChildrenFunc(item);
+            ChildWidgets = getChildrenFunc(widget);
+
+            //небольшой хак, чтобы сериализованный объект был меньше
             if (!ChildWidgets.Any())
-                ChildWidgets = null;//чтобы сериализованный объект был меньше
-
-            SortOrder = item.SortOrder;
+                ChildWidgets = null;
+            if (!AllowedUrlPatterns.Any())
+                AllowedUrlPatterns = null;
+            if (!DeniedUrlPatterns.Any())
+                DeniedUrlPatterns = null;
         }
     }
 }

@@ -10,15 +10,13 @@ namespace QA.WidgetPlatform.Api
     /// </summary>
     public class SiteNode
     {
-        public SiteNode(IAbstractItem abstractItem, ITargetingFilter targetingFlt)
+        public SiteNode(UniversalAbstractItem abstractItem, ITargetingFilter targetingFlt)
         {
             Id = abstractItem.Id;
             Alias = abstractItem.Alias;
-            NodeType = abstractItem is UniversalAbstractItem ?
-                (abstractItem as UniversalAbstractItem).Type :
-                null;//к сожалению, не очень хорошо спроектирован интерфейс IAbstractItem
+            NodeType = abstractItem.Type;
 
-            var children = abstractItem.GetChildren(targetingFlt);
+            var children = abstractItem.GetChildren<UniversalAbstractItem>(targetingFlt);
             if (children.Any())
             {
                 Children = children
