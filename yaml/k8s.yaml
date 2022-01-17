@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: widget-platform-api-deployment-||env||
+  namespace: "||namespace||"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: widget-platform-api-||env||
+  template:
+    metadata:
+      labels:
+        app: widget-platform-api-||env||
+        logging: enabled
+    spec:
+      terminationGracePeriodSeconds: 100
+      containers:
+      - image: "||registry||/mts-widget-platform-api:||version||"
+        name: widget-platform-api-||env||
+        envFrom:
+        - configMapRef:
+            name: widget-platform-api-config-||env||
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: tz-config
+        resources:
+          limits:
+            memory: "512Mi"
+          requests:
+            memory: "256Mi"
+      volumes:
+      - hostPath:
+          path: /usr/share/zoneinfo/Europe/Moscow
+          type: ""
+        name: tz-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: widget-platform-api-service-||env||
+  namespace: "||namespace||"
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: widget-platform-api-||env||
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: widget-platform-api-ingress-||env||
+  namespace: "||namespace||"
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+spec:
+  rules:
+  - host: "||host||"
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: widget-platform-api-service-||env||
+            port:
+              number: 80
