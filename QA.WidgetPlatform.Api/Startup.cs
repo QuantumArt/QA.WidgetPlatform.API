@@ -9,6 +9,9 @@ using QA.DotNetCore.Engine.QpData.Configuration;
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using QA.WidgetPlatform.Api.Application.Middleware;
+using QA.WidgetPlatform.Api.Services;
 
 namespace QA.WidgetPlatform.Api
 {
@@ -41,6 +44,8 @@ namespace QA.WidgetPlatform.Api
             {
                 options.UseQpSettings(Configuration.GetSection("QpSettings").Get<QpSettings>());
             });
+            //services.TryAddSingleton<ITargetingFiltersFactory, EmptyTargetingFiltersFactory>();
+            services.TryAddSingleton<ITargetingFiltersFactory, MtsTargetingFiltersFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,7 +56,7 @@ namespace QA.WidgetPlatform.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMiddleware<StatusCodeExceptionHandler>();
+            app.UseMiddleware<StatusCodeExceptionHandlerMiddleware>();
 
             app.UseRouting();
 

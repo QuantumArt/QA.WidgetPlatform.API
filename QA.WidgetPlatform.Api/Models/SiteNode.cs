@@ -1,9 +1,8 @@
-﻿using QA.DotNetCore.Engine.Abstractions;
+﻿using System.Linq;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.DotNetCore.Engine.QpData;
-using System.Linq;
 
-namespace QA.WidgetPlatform.Api
+namespace QA.WidgetPlatform.Api.Models
 {
     /// <summary>
     /// Элемент структуры сайта
@@ -20,9 +19,9 @@ namespace QA.WidgetPlatform.Api
             if (children.Any())
             {
                 Children = children
-                   .OrderBy(ai => ai.SortOrder)
-                   .Select(ai => new SiteNode(ai, targetingFlt))
-                   .ToArray();
+                    .OrderBy(ai => ai.SortOrder)
+                    .Select(ai => new SiteNode(ai, targetingFlt))
+                    .ToArray();
             }
         }
 

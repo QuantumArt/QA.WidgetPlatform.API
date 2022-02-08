@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace QA.WidgetPlatform.Api
+namespace QA.WidgetPlatform.Api.Application.Exceptions
 {
     public class StatusCodeException : Exception
     {

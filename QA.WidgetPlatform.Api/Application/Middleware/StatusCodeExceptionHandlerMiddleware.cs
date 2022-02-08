@@ -1,16 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using QA.WidgetPlatform.Api.Application.Exceptions;
 
-namespace QA.WidgetPlatform.Api
+namespace QA.WidgetPlatform.Api.Application.Middleware
 {
-    public class StatusCodeExceptionHandler
+    public class StatusCodeExceptionHandlerMiddleware
     {
         private readonly RequestDelegate request;
 
-        public StatusCodeExceptionHandler(RequestDelegate pipeline)
+        public StatusCodeExceptionHandlerMiddleware(RequestDelegate pipeline)
         {
             this.request = pipeline;
         }

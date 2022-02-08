@@ -1,12 +1,10 @@
-﻿using QA.DotNetCore.Engine.Abstractions;
+﻿using System.Collections.Generic;
+using System.Linq;
+using QA.DotNetCore.Engine.Abstractions;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.DotNetCore.Engine.QpData;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace QA.WidgetPlatform.Api
+namespace QA.WidgetPlatform.Api.TargetingFilters
 {
     public class MtsRegionFilter : BaseTargetingFilter
     {
@@ -25,12 +23,11 @@ namespace QA.WidgetPlatform.Api
             {
                 return true;
             }
-            if (!(item is UniversalAbstractItem))
+            if (!(item is UniversalAbstractItem uai))
             {
                 //так быть не должно, этот фильтр мы должны использоать, когда у нас используется UniversalAbstractItemFactory 
                 return false;
             }
-            var uai = item as UniversalAbstractItem;
 
             if (uai.UntypedFields.Keys.Any(k => k.ToLowerInvariant() == MtsAbstractItemRegionFieldName))
             {
