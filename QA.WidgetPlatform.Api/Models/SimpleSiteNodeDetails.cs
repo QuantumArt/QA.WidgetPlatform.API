@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using QA.DotNetCore.Engine.QpData;
+using QA.WidgetPlatform.Api.Application;
 
 namespace QA.WidgetPlatform.Api.Models
 {
@@ -21,6 +22,7 @@ namespace QA.WidgetPlatform.Api.Models
             Details = item.UntypedFields
                 .Where(kvp => kvp.Value != null) // думаю, косяк в UniversalAbstractItem, отсекать null-значения скорее всего надо там
                 .Where(kvp => skipIncludeFieldsFilter || includeFields.Any(ef => ef.Equals(kvp.Key, StringComparison.OrdinalIgnoreCase)))
+                .Where(kvp => skipIncludeFieldsFilter && !Constants.AbstractItemSystemFields.Any(ef => ef.Equals(kvp.Key, StringComparison.InvariantCultureIgnoreCase)))
                 .ToDictionary(kvp => kvp.Key, kvp => new FieldInfo
             {
                 Value = kvp.Value,
