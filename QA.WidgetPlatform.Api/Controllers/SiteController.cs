@@ -20,14 +20,12 @@ namespace QA.WidgetPlatform.Api.Controllers
     [Route("[controller]")]
     public class SiteController : ControllerBase
     {
-        private readonly ILogger<SiteController> _logger;
         private readonly IAbstractItemStorageProvider _abstractItemStorageProvider;
         private readonly ITargetingFiltersFactory _targetingFiltersFactory;
 
-        public SiteController(ILogger<SiteController> logger, IAbstractItemStorageProvider abstractItemStorageProvider,
+        public SiteController(IAbstractItemStorageProvider abstractItemStorageProvider,
             ITargetingFiltersFactory targetingFiltersFactory)
         {
-            _logger = logger;
             _abstractItemStorageProvider = abstractItemStorageProvider;
             _targetingFiltersFactory = targetingFiltersFactory;
         }
