@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="QA.DotNetCore.Engine.QpData.Configuration" Version="1.5.15-beta7" />
+    <PackageReference Include="QA.DotNetCore.Engine.QpData.Configuration" Version="1.5.15-beta6" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
 
