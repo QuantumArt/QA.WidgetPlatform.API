@@ -74,8 +74,7 @@ namespace QA.WidgetPlatform.Api.Controllers
             var startPageFilter = _targetingFiltersFactory.StructureFilter(targeting);
             var nodeFilter = _targetingFiltersFactory.FlattenNodesFilter(targeting);
 
-            //var nodes = storage.GetNodes<UniversalAbstractItem>(dnsName, startPageFilter, nodeFilter);
-            var nodes = RemoveMe.GetNodes<UniversalAbstractItem>(storage, dnsName, startPageFilter, nodeFilter);
+            var nodes = storage.GetNodes<UniversalAbstractItem>(dnsName, startPageFilter, nodeFilter);
             
             if (nodes == null || !nodes.Any())
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
