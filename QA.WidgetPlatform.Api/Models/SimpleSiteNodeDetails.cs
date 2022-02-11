@@ -18,15 +18,30 @@ namespace QA.WidgetPlatform.Api.Models
         {
             Id = item.Id;
             var skipIncludeFieldsFilter = includeFields == null || !includeFields.Any();
-            
-            Details = item.UntypedFields
-                .Where(kvp => kvp.Value != null) // думаю, косяк в UniversalAbstractItem, отсекать null-значения скорее всего надо там
-                .Where(kvp => skipIncludeFieldsFilter || includeFields.Any(ef => ef.Equals(kvp.Key, StringComparison.OrdinalIgnoreCase)))
-                .Where(kvp => skipIncludeFieldsFilter && !Constants.AbstractItemSystemFields.Any(ef => ef.Equals(kvp.Key, StringComparison.InvariantCultureIgnoreCase)))
-                .ToDictionary(kvp => kvp.Key, kvp => new FieldInfo
+
+            var detailsDto = item.UntypedFields
+                .Where(kvp =>
+                    kvp.Value !=
+                    null); // думаю, косяк в UniversalAbstractItem, отсекать null-значения скорее всего надо там 
+
+            if (includeFields == null || !includeFields.Any())
+            {
+                detailsDto = detailsDto
+                    .Where(kvp =>
+                        !Constants.AbstractItemSystemFields.Any(ef =>
+                            ef.Equals(kvp.Key, StringComparison.InvariantCultureIgnoreCase)));
+            }
+            else
+            {
+                detailsDto = detailsDto
+                    .Where(kvp => includeFields.Any(ef => ef.Equals(kvp.Key, StringComparison.OrdinalIgnoreCase)));
+            }
+
+            Details = detailsDto.ToDictionary(kvp => kvp.Key, kvp => new FieldInfo
             {
                 Value = kvp.Value,
-                Type = kvp.Value.GetType().Name // думаю, нужно использовать справочник возможных типов qp, .net типы тут временно
+                Type = kvp.Value.GetType()
+                    .Name // думаю, нужно использовать справочник возможных типов qp, .net типы тут временно
             });
         }
     }
