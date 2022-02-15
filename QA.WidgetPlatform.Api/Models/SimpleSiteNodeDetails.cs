@@ -11,13 +11,12 @@ namespace QA.WidgetPlatform.Api.Models
     /// </summary>
     public class SimpleSiteNodeDetails
     {
-        public int Id { get; set; }
-        public IDictionary<string, FieldInfo> Details { get; set; }
+        public int Id { get; }
+        public IDictionary<string, FieldInfo> Details { get; }
 
         public SimpleSiteNodeDetails(UniversalAbstractItem item, IEnumerable<string> includeFields = null)
         {
             Id = item.Id;
-            var skipIncludeFieldsFilter = includeFields == null || !includeFields.Any();
 
             var detailsDto = item.UntypedFields
                 .Where(kvp =>

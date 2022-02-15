@@ -35,12 +35,16 @@ namespace QA.WidgetPlatform.Api.Controllers
         /// </summary>
         /// <param name="dnsName">Доменное имя сайта</param>
         /// <param name="targeting">Словарь значений таргетирования</param>
+        /// <param name="fields">Поля деталей к выдаче. Если пусто, то детали выдаваться не будут</param>
+        /// <param name="deep">Глубина страуктуры, где 0 - это корневой элемент</param>
         /// <returns></returns>
         [HttpGet("structure")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public SiteNode Structure([Required] [FromQuery] string dnsName, [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting)
+        public SiteNode Structure([Required] [FromQuery] string dnsName,
+            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] fields,
+            int? deep)
         {
             var storage = _abstractItemStorageProvider.Get();
 
@@ -51,7 +55,7 @@ namespace QA.WidgetPlatform.Api.Controllers
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
             var pagesFilters = new OnlyPagesFilter().AddFilter(startPageFilter);
-            return new SiteNode(startPage, pagesFilters);
+            return new SiteNode(startPage, pagesFilters, deep, fields);
         }
 
         /// <summary>
@@ -59,7 +63,7 @@ namespace QA.WidgetPlatform.Api.Controllers
         /// </summary>
         /// <param name="dnsName">Доменное имя сайта</param>
         /// <param name="targeting">Словарь значений таргетирования</param>
-        /// <param name="fields">Поля деталей к выдаче. Если пусто, то детали выдаваться не будут</param>
+        /// <param name="fields">Поля деталей к выдаче. Если пусто, то будут выведены все детали</param>
         /// <returns></returns>
         [HttpGet("details")]
         [ProducesResponseType(StatusCodes.Status200OK)]
