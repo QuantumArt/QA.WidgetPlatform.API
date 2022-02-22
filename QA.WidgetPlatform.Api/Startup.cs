@@ -9,6 +9,8 @@ using QA.DotNetCore.Engine.QpData.Configuration;
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using QA.WidgetPlatform.Api.Application.Middleware;
 
 namespace QA.WidgetPlatform.Api
 {
@@ -30,7 +32,7 @@ namespace QA.WidgetPlatform.Api
             });
             services.AddSwaggerGen(options => 
             {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Mts Widget Platform API", Version = "v1" });
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Widget Platform API", Version = "v1" });
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 options.IncludeXmlComments(xmlPath);
@@ -41,6 +43,7 @@ namespace QA.WidgetPlatform.Api
             {
                 options.UseQpSettings(Configuration.GetSection("QpSettings").Get<QpSettings>());
             });
+            services.TryAddSingleton<ITargetingFiltersFactory, EmptyTargetingFiltersFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,7 +54,7 @@ namespace QA.WidgetPlatform.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMiddleware<StatusCodeExceptionHandler>();
+            app.UseMiddleware<StatusCodeExceptionHandlerMiddleware>();
 
             app.UseRouting();
 

@@ -1,11 +1,11 @@
-﻿using QA.DotNetCore.Engine.Abstractions;
-using QA.DotNetCore.Engine.QpData;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using QA.DotNetCore.Engine.Abstractions;
+using QA.DotNetCore.Engine.QpData;
 
-namespace QA.WidgetPlatform.Api
+namespace QA.WidgetPlatform.Api.Models
 {
     /// <summary>
     /// Виджет

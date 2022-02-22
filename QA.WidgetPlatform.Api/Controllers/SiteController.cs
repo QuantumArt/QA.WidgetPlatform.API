@@ -9,6 +9,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using QA.WidgetPlatform.Api.Application;
+using QA.WidgetPlatform.Api.Application.Exceptions;
+using QA.WidgetPlatform.Api.Models;
+using QA.WidgetPlatform.Api.TargetingFilters;
 
 namespace QA.WidgetPlatform.Api.Controllers
 {
@@ -16,13 +20,14 @@ namespace QA.WidgetPlatform.Api.Controllers
     [Route("[controller]")]
     public class SiteController : ControllerBase
     {
-        private readonly ILogger<SiteController> _logger;
         private readonly IAbstractItemStorageProvider _abstractItemStorageProvider;
+        private readonly ITargetingFiltersFactory _targetingFiltersFactory;
 
-        public SiteController(ILogger<SiteController> logger, IAbstractItemStorageProvider abstractItemStorageProvider)
+        public SiteController(IAbstractItemStorageProvider abstractItemStorageProvider,
+            ITargetingFiltersFactory targetingFiltersFactory)
         {
-            _logger = logger;
             _abstractItemStorageProvider = abstractItemStorageProvider;
+            _targetingFiltersFactory = targetingFiltersFactory;
         }
 
         /// <summary>
@@ -30,22 +35,56 @@ namespace QA.WidgetPlatform.Api.Controllers
         /// </summary>
         /// <param name="dnsName">Доменное имя сайта</param>
         /// <param name="targeting">Словарь значений таргетирования</param>
+        /// <param name="fields">Поля деталей к выдаче. Если пусто, то детали выдаваться не будут</param>
+        /// <param name="deep">Глубина страуктуры, где 0 - это корневой элемент</param>
         /// <returns></returns>
         [HttpGet("structure")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public SiteNode Structure([Required] [FromQuery] string dnsName, [Bind(Prefix = "t")] [FromQuery] IDictionary<string, string> targeting)
+        public SiteNode Structure([Required] [FromQuery] string dnsName,
+            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] fields,
+            int? deep)
         {
             var storage = _abstractItemStorageProvider.Get();
 
-            var targetingFilter = CreateMtsFilter(targeting);
+            var startPageFilter = _targetingFiltersFactory.StructureFilter(targeting);
 
-            var startPage = storage.GetStartPage<UniversalPage>(dnsName, targetingFilter);
+            var startPage = storage.GetStartPage<UniversalPage>(dnsName, startPageFilter);
             if (startPage == null)
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
-            return new SiteNode(startPage, new OnlyPagesFilter() + targetingFilter);
+            var pagesFilters = new OnlyPagesFilter().AddFilter(startPageFilter);
+            return new SiteNode(startPage, pagesFilters, deep, fields);
+        }
+
+        /// <summary>
+        /// Получение массива нод, удовлетворяющих переданным фильтрам
+        /// </summary>
+        /// <param name="dnsName">Доменное имя сайта</param>
+        /// <param name="targeting">Словарь значений таргетирования</param>
+        /// <param name="fields">Поля деталей к выдаче. Если пусто, то будут выведены все детали</param>
+        /// <returns></returns>
+        [HttpGet("details")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IEnumerable<SimpleSiteNodeDetails> Details([Required] [FromQuery] string dnsName,
+            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting,
+            [FromQuery] string[] fields)
+        {
+            var storage = _abstractItemStorageProvider.Get();
+
+            var startPageFilter = _targetingFiltersFactory.StructureFilter(targeting);
+            var nodeFilter = _targetingFiltersFactory.FlattenNodesFilter(targeting);
+
+            var nodes = storage.GetNodes<UniversalAbstractItem>(dnsName, startPageFilter, nodeFilter);
+            
+            if (nodes == null || !nodes.Any())
+                throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
+            
+            return nodes
+                .Select(x => new SimpleSiteNodeDetails(x, fields));
         }
 
         /// <summary>
@@ -88,7 +127,7 @@ namespace QA.WidgetPlatform.Api.Controllers
             if (page == null)
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
-            var targetingFilter = new OnlyWidgetsFilter() + CreateMtsFilter(targeting);
+            var targetingFilter = new OnlyWidgetsFilter().AddFilter(_targetingFiltersFactory.FlattenNodesFilter(targeting));
 
             //виджеты, инфу о которых мы вернем в этой методе, могут быть не только у текущей страницы, т.к.
             //если запрашиваются виджеты в рекурсивных зонах, то они могут быть дочерними не для текущей страницы, а для какой-то из её родительских страниц
@@ -179,31 +218,5 @@ namespace QA.WidgetPlatform.Api.Controllers
         {
             return WidgetZoneTypeQualifier.QualifyZone(zoneName) == WidgetZoneType.Global;
         }
-
-        #region единственная МТС-ная специфика
-
-        private static MtsRegionFilter CreateMtsFilter(IDictionary<string, string> currentTargeting)
-        {
-            //для работы мтс-ного сайта нам нужно таргетироваться по региону
-            //ожидается, что в словаре значений таргетирования к нам придёт запись с ключом "region"
-            //и в значении будет список id: id текущего региона и всех родительских через запятую
-            List<int> idList;
-            if (currentTargeting.ContainsKey("region"))
-            {
-                idList = currentTargeting["region"]
-                    .Split(',')
-                    .Select(t => int.TryParse(t, out int parsed) ? parsed : 0)
-                    .Where(id => id > 0)
-                    .ToList();
-            }
-            else
-            {
-                idList = new List<int>();
-            }
-
-            return new MtsRegionFilter(idList);
-        }
-
-        #endregion
     }
 }
