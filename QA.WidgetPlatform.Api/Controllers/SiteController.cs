@@ -110,21 +110,22 @@ namespace QA.WidgetPlatform.Api.Controllers
         }
 
         /// <summary>
-        /// Получение виджетов для страницы, сгруппированных по зонам
+        /// Получение виджетов для страницы или виджета, сгруппированных по зонам
         /// </summary>
-        /// <param name="pageId">id страницы</param>
+        /// <param name="abstractItemId">id страницы или виджета</param>
         /// <param name="targeting">Словарь значений таргетирования</param>
         /// <param name="zones">Список виджетных зон (если не передавать, то поиск виджетов не будет производиться для рекурсивных и глобальных зон)</param>
         /// <returns></returns>
-        [HttpGet("widgets/{pageId}")]
+        [HttpGet("widgets/{abstractItemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IDictionary<string, WidgetDetails[]> WidgetsForPage(int pageId, [Bind(Prefix = "t")] [FromQuery] IDictionary<string, string> targeting, [FromQuery] string[] zones)
+        public IDictionary<string, WidgetDetails[]> WidgetsForPage(int abstractItemId, [Bind(Prefix = "t")] [FromQuery] IDictionary<string, string> targeting, [FromQuery] string[] zones)
         {
             var storage = _abstractItemStorageProvider.Get();
-            var page = storage.Get<UniversalPage>(pageId);
+            var abstractItem = storage.Get<UniversalAbstractItem>(abstractItemId);
+            var isPage = abstractItem is UniversalPage;
 
-            if (page == null)
+            if (abstractItem == null)
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
             var targetingFilter = new OnlyWidgetsFilter().AddFilter(_targetingFiltersFactory.FlattenNodesFilter(targeting));
@@ -138,13 +139,13 @@ namespace QA.WidgetPlatform.Api.Controllers
             {
                 var atLeastOneRecursiveOrGlobalZone = zones.Any(z => ZoneIsRecursive(z) || ZoneIsGlobal(z));
 
-                if (atLeastOneRecursiveOrGlobalZone)
+                if (isPage && atLeastOneRecursiveOrGlobalZone)
                 {
                     //пройдём по всей иерархии вверх до стартовой страницы, чтобы достать оттуда виджеты в рекурсивных или глобальных зонах
-                    IAbstractItem currentPage = page;
+                    IAbstractItem currentPage = abstractItem;
                     while (currentPage != null)
                     {
-                        var zonesToSearch = currentPage.Id != page.Id ? 
+                        var zonesToSearch = currentPage.Id != abstractItem.Id ? 
                             (PageContainsGlobalWidgets(currentPage) ? 
                                 zones.Where(z => ZoneIsRecursive(z) || ZoneIsGlobal(z)).ToArray() : 
                                 zones.Where(z => ZoneIsRecursive(z)).ToArray()) :
@@ -169,13 +170,13 @@ namespace QA.WidgetPlatform.Api.Controllers
                 }
                 else
                 {
-                    result = ChildWidgetsGroupedByZone(page, targetingFilter, zones);
+                    result = ChildWidgetsGroupedByZone(abstractItem, targetingFilter, zones);
                 }
             }
             else
             {
                 //если зоны явно не переданы в этот метод - возвращаем виджеты у текущей страницы во всех зонах
-                result = ChildWidgetsGroupedByZone(page, targetingFilter);
+                result = ChildWidgetsGroupedByZone(abstractItem, targetingFilter);
             }
 
             return result;
