@@ -3,14 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
-using QA.DotNetCore.Engine.Persistent.Interfaces.Settings;
-using QA.DotNetCore.Engine.QpData.Configuration;
-using System;
-using System.IO;
-using System.Reflection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using QA.WidgetPlatform.Api.Application.Middleware;
+using QA.WidgetPlatform.Api.Infrastructure;
 
 namespace QA.WidgetPlatform.Api
 {
@@ -26,24 +20,7 @@ namespace QA.WidgetPlatform.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddJsonOptions(options =>
-            {
-                options.JsonSerializerOptions.IgnoreNullValues = true;
-            });
-            services.AddSwaggerGen(options => 
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Widget Platform API", Version = "v1" });
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                options.IncludeXmlComments(xmlPath);
-            });
-
-            services.AddMemoryCache();
-            services.AddSiteStructure(options =>
-            {
-                options.UseQpSettings(Configuration.GetSection("QpSettings").Get<QpSettings>());
-            });
-            services.TryAddSingleton<ITargetingFiltersFactory, EmptyTargetingFiltersFactory>();
+            services.ConfigureBaseServices(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
