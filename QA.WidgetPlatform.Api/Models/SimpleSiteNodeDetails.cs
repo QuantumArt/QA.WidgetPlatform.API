@@ -14,7 +14,7 @@ namespace QA.WidgetPlatform.Api.Models
         public int Id { get; }
         public IDictionary<string, FieldInfo> Details { get; }
 
-        public SimpleSiteNodeDetails(UniversalAbstractItem item, IEnumerable<string> includeFields = null)
+        public SimpleSiteNodeDetails(UniversalAbstractItem item, IEnumerable<string>? includeFields = null)
         {
             Id = item.Id;
 
@@ -36,12 +36,12 @@ namespace QA.WidgetPlatform.Api.Models
                     .Where(kvp => includeFields.Any(ef => ef.Equals(kvp.Key, StringComparison.OrdinalIgnoreCase)));
             }
 
-            Details = detailsDto.ToDictionary(kvp => kvp.Key, kvp => new FieldInfo
-            {
-                Value = kvp.Value,
-                Type = kvp.Value.GetType()
-                    .Name // думаю, нужно использовать справочник возможных типов qp, .net типы тут временно
-            });
+            Details = detailsDto.ToDictionary(kvp => kvp.Key, kvp =>
+                new FieldInfo(
+                    // думаю, нужно использовать справочник возможных типов qp, .net типы тут временно
+                    kvp.Value.GetType().Name,
+                    kvp.Value
+                ));
         }
     }
 }

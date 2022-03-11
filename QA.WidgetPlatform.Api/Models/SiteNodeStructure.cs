@@ -11,7 +11,8 @@ namespace QA.WidgetPlatform.Api.Models
     /// </summary>
     public class SiteNode
     {
-        public SiteNode(UniversalAbstractItem abstractItem, ITargetingFilter targetingFlt, int? deep = null, IEnumerable<string> includeFields = null)
+        public SiteNode(UniversalAbstractItem abstractItem, ITargetingFilter targetingFlt, int? deep = null,
+            IEnumerable<string>? includeFields = null)
         {
             Id = abstractItem.Id;
             Alias = abstractItem.Alias;
@@ -31,14 +32,17 @@ namespace QA.WidgetPlatform.Api.Models
 
             if (includeFields != null && includeFields.Any())
             {
-                Details = abstractItem.UntypedFields.Where(kvp => kvp.Value != null) // думаю, косяк в UniversalAbstractItem, отсекать null-значения скорее всего надо там
+                Details = abstractItem.UntypedFields
+                    .Where(kvp =>
+                        kvp.Value !=
+                        null) // думаю, косяк в UniversalAbstractItem, отсекать null-значения скорее всего надо там
                     .Where(kvp => includeFields.Any(ef => ef.Equals(kvp.Key, StringComparison.OrdinalIgnoreCase)))
-                    .ToDictionary(kvp => kvp.Key, kvp => new FieldInfo
-                    {
-                        Value = kvp.Value,
-                        Type = kvp.Value.GetType()
-                            .Name // думаю, нужно использовать справочник возможных типов qp, .net типы тут временно
-                    });
+                    .ToDictionary(kvp => kvp.Key, kvp =>
+                        new FieldInfo(
+                            // думаю, нужно использовать справочник возможных типов qp, .net типы тут временно
+                            kvp.Value.GetType().Name,
+                            kvp.Value
+                        ));
             }
 
             static bool IsDeepAvailable(int? deep)
@@ -50,7 +54,7 @@ namespace QA.WidgetPlatform.Api.Models
         public int Id { get; }
         public string Alias { get; }
         public string NodeType { get; }
-        public SiteNode[] Children { get; }
-        public IDictionary<string, FieldInfo> Details { get; }
+        public SiteNode[]? Children { get; }
+        public IDictionary<string, FieldInfo>? Details { get; }
     }
 }

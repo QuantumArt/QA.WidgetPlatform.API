@@ -1,26 +1,17 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using QA.WidgetPlatform.Api.Application.Middleware;
+using QA.WidgetPlatform.Api.Infrastructure;
 
-namespace QA.WidgetPlatform.Api
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.ConfigureBaseServices(builder.Configuration);
+    
+var app = builder.Build();
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
-}
+app.UseMiddleware<StatusCodeExceptionHandlerMiddleware>();
+app.UseRouting();
+app.UseAuthorization();
+app.UseSwaggerUI();
+app.MapControllers();
+app.MapSwagger();
+
+app.Run();
