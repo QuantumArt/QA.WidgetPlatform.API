@@ -1,4 +1,6 @@
-﻿namespace QA.WidgetPlatform.Api.Models
+﻿using System.Text.Json.Serialization;
+
+namespace QA.WidgetPlatform.Api.Models
 {
     public class FieldInfo
     {
@@ -8,6 +10,7 @@
             Value = value;
         }
 
+        [JsonIgnore]
         public string Type { get; }
         public object Value { get; }
     }
