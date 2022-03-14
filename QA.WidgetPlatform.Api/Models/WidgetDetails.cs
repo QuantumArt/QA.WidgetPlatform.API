@@ -13,12 +13,12 @@ namespace QA.WidgetPlatform.Api.Models
     public class WidgetDetails : SiteNodeDetails
     {
         public string Zone { get; set; }
-        public string[] AllowedUrlPatterns { get; set; }
-        public string[] DeniedUrlPatterns { get; set; }
+        public string[]? AllowedUrlPatterns { get; set; }
+        public string[]? DeniedUrlPatterns { get; set; }
         /// <summary>
         /// Дочерние виджеты, сгруппированные по зонам
         /// </summary>
-        public IDictionary<string, WidgetDetails[]> ChildWidgets { get; set; }
+        public IDictionary<string, WidgetDetails[]>? ChildWidgets { get; set; }
 
         [JsonIgnore]
         public int SortOrder { get; set; }

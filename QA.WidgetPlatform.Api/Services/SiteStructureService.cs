@@ -168,7 +168,7 @@ namespace QA.WidgetPlatform.Api.Services
         }
 
         private Dictionary<string, WidgetDetails[]> ChildWidgetsGroupedByZone(IAbstractItem item,
-            ITargetingFilter filter, IEnumerable<string> zones = null)
+            ITargetingFilter filter, IEnumerable<string>? zones = null)
         {
             return item
                 .GetChildren<UniversalWidget>(filter)
