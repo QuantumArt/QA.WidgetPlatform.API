@@ -6,6 +6,8 @@ namespace QA.WidgetPlatform.Api.Services.Abstract
 {
     public interface ISiteStructureService
     {
+        void Warmup();
+        
         /// <summary>
         /// Получение структуры страниц сайта
         /// </summary>

@@ -19,6 +19,10 @@ namespace QA.WidgetPlatform.Api.Controllers
             _siteStructureService = siteStructureService;
         }
 
+        [HttpGet("[action]")]
+        public void Warmup()
+            => _siteStructureService.Warmup();
+
         /// <summary>
         /// Получение структуры страниц сайта
         /// </summary>

@@ -25,6 +25,26 @@ namespace QA.WidgetPlatform.Api.Services
             _targetingFiltersFactory = targetingFiltersFactory;
         }
 
+        public void Warmup()
+        {
+            var storage = _abstractItemStorageProvider.Get();
+            LazyLoad(storage.Root as AbstractItem);
+
+            void LazyLoad(AbstractItem? item)
+            {
+                if (item == null)
+                    return;
+                // При уходе от использования memoryCache для хранения данных,
+                // необходимость в прогреве отпадет
+                item.GetDetail(string.Empty, string.Empty);
+
+                foreach (var child in item.GetChildren())
+                {
+                    LazyLoad(child as AbstractItem);
+                }
+            }
+        }
+
         /// <summary>
         /// Получение структуры страниц сайта
         /// </summary>
