@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
@@ -31,10 +30,10 @@ namespace QA.WidgetPlatform.Api.Services
 
         public void Warmup()
         {
-            _logger.LogInformation($"Warmup start at {DateTime.Now.ToString("O")}");
+            _logger.LogInformation("Warmup start");
             var storage = _abstractItemStorageProvider.Get();
             LazyLoad(storage.Root as AbstractItem);
-            _logger.LogInformation($"Warmup end at {DateTime.Now.ToString("O")}");
+            _logger.LogInformation("Warmup end");
 
             void LazyLoad(AbstractItem? item)
             {

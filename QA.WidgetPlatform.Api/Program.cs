@@ -23,6 +23,6 @@ app.UseAuthorization();
 app.UseSwaggerUI();
 app.MapControllers();
 app.MapSwagger();
-app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/health");
 
 app.Run();
