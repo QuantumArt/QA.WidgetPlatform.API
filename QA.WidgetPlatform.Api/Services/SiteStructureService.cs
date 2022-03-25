@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using QA.DotNetCore.Engine.Abstractions;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.DotNetCore.Engine.QpData;
@@ -17,12 +18,36 @@ namespace QA.WidgetPlatform.Api.Services
     {
         private readonly IAbstractItemStorageProvider _abstractItemStorageProvider;
         private readonly ITargetingFiltersFactory _targetingFiltersFactory;
+        private readonly ILogger<SiteStructureService> _logger;
 
         public SiteStructureService(IAbstractItemStorageProvider abstractItemStorageProvider,
-            ITargetingFiltersFactory targetingFiltersFactory)
+            ITargetingFiltersFactory targetingFiltersFactory, ILogger<SiteStructureService> logger)
         {
             _abstractItemStorageProvider = abstractItemStorageProvider;
             _targetingFiltersFactory = targetingFiltersFactory;
+            _logger = logger;
+        }
+
+        public void Warmup()
+        {
+            _logger.LogInformation("Warmup start");
+            var storage = _abstractItemStorageProvider.Get();
+            LazyLoad(storage.Root as AbstractItem);
+            _logger.LogInformation("Warmup end");
+
+            void LazyLoad(AbstractItem? item)
+            {
+                if (item == null)
+                    return;
+                // При уходе от использования memoryCache для хранения данных,
+                // необходимость в прогреве отпадет
+                item.GetDetail(string.Empty, string.Empty);
+
+                foreach (var child in item.GetChildren())
+                {
+                    LazyLoad(child as AbstractItem);
+                }
+            }
         }
 
         /// <summary>

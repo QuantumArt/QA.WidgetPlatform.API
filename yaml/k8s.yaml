@@ -28,9 +28,24 @@ spec:
           name: tz-config
         resources:
           limits:
-            memory: "512Mi"
+            memory: "1Gi"
           requests:
-            memory: "256Mi"
+            memory: "512Mi"
+        readinessProbe:
+          httpGet:
+            path: /site/warmup
+            port: 80
+          failureThreshold: 3
+          timeoutSeconds: 150
+          periodSeconds: 43200
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          failureThreshold: 2
+          timeoutSeconds: 3
       volumes:
       - hostPath:
           path: /usr/share/zoneinfo/Europe/Moscow

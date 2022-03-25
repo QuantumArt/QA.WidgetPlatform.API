@@ -17,6 +17,7 @@ namespace QA.WidgetPlatform.Api.Infrastructure
     {
         public static IServiceCollection ConfigureBaseServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddHealthChecks();
             services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
