@@ -31,12 +31,13 @@ spec:
             memory: "1Gi"
           requests:
             memory: "512Mi"
-        startupProbe:
+        readinessProbe:
           httpGet:
             path: /site/warmup
             port: 80
           failureThreshold: 3
-          periodSeconds: 120
+          timeoutSeconds: 150
+          periodSeconds: 43200
         livenessProbe:
           httpGet:
             path: /healthz
@@ -44,6 +45,7 @@ spec:
           initialDelaySeconds: 30
           periodSeconds: 30
           failureThreshold: 2
+          timeoutSeconds: 3
       volumes:
       - hostPath:
           path: /usr/share/zoneinfo/Europe/Moscow
