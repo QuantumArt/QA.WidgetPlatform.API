@@ -13,9 +13,7 @@ namespace QA.WidgetPlatform.Api.Application.Middleware
             this.request = pipeline;
         }
 
-        public Task Invoke(HttpContext context) => this.InvokeAsync(context); 
-
-        async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
             try
             {
@@ -28,5 +26,4 @@ namespace QA.WidgetPlatform.Api.Application.Middleware
             }
         }
     }
-
 }
