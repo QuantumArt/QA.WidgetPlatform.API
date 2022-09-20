@@ -1,8 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Mvc;
 using QA.DotNetCore.Engine.Abstractions;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.DotNetCore.Engine.QpData;
@@ -62,8 +58,10 @@ namespace QA.WidgetPlatform.Api.Services
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public SiteNode Structure(string dnsName,
-            IDictionary<string, string> targeting, string[] fields,
+        public SiteNode Structure(
+            string dnsName,
+            IDictionary<string, string> targeting,
+            string[] fields,
             int? deep)
         {
             var storage = _abstractItemStorageProvider.Get();
@@ -75,7 +73,9 @@ namespace QA.WidgetPlatform.Api.Services
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
             var pagesFilters = new OnlyPagesFilter().AddFilter(startPageFilter);
-            return new SiteNode(startPage, pagesFilters, deep, fields);
+            var includeFields = new HashSet<string>(fields, StringComparer.OrdinalIgnoreCase);
+
+            return new SiteNode(startPage, pagesFilters, includeFields, deep);
         }
 
         /// <summary>

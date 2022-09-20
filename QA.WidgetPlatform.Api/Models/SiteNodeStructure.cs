@@ -1,18 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Buffers;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.DotNetCore.Engine.QpData;
+using QA.WidgetPlatform.Api.Application;
 
 namespace QA.WidgetPlatform.Api.Models
 {
+
     /// <summary>
     /// Элемент структуры сайта
     /// </summary>
     public class SiteNode
     {
-        public SiteNode(UniversalAbstractItem abstractItem, ITargetingFilter targetingFlt, int? deep = null,
-            IEnumerable<string>? includeFields = null)
+        public int Id { get; }
+        public string Alias { get; }
+        public string NodeType { get; }
+        public SiteNode[]? Children { get; }
+        public IDictionary<string, FieldInfo>? Details { get; }
+
+        public SiteNode(
+            UniversalAbstractItem abstractItem,
+            ITargetingFilter targetingFlt,
+            ICollection<string> includeFields,
+            int? deep = null)
         {
             Id = abstractItem.Id;
             Alias = abstractItem.Alias;
@@ -20,29 +29,35 @@ namespace QA.WidgetPlatform.Api.Models
 
             if (IsDeepAvailable(deep--))
             {
-                var children = abstractItem.GetChildren<UniversalAbstractItem>(targetingFlt);
-                if (children.Any())
+                var abstractItemChildren = abstractItem
+                    .GetChildren<UniversalAbstractItem>(targetingFlt)
+                    .ToArray();
+
+                if (abstractItemChildren.Length > 0)
                 {
-                    Children = children
-                        .OrderBy(ai => ai.SortOrder)
-                        .Select(ai => new SiteNode(ai, targetingFlt, deep, includeFields))
-                        .ToArray();
+                    Array.Sort(abstractItemChildren, new AbstractItemsSortOrderComparer());
+
+                    Children = new SiteNode[abstractItemChildren.Length];
+
+                    for (int i = 0; i < abstractItemChildren.Length; i++)
+                    {
+                        var child = abstractItemChildren[i];
+                        Children[i] = new SiteNode(child, targetingFlt, includeFields, deep);
+                    }
                 }
             }
 
-            if (includeFields != null && includeFields.Any())
+            if (includeFields.Count > 0)
             {
-                Details = abstractItem.UntypedFields
-                    .Where(kvp =>
-                        kvp.Value !=
-                        null) // думаю, косяк в UniversalAbstractItem, отсекать null-значения скорее всего надо там
-                    .Where(kvp => includeFields.Any(ef => ef.Equals(kvp.Key, StringComparison.OrdinalIgnoreCase)))
-                    .ToDictionary(kvp => kvp.Key, kvp =>
-                        new FieldInfo(
-                            // думаю, нужно использовать справочник возможных типов qp, .net типы тут временно
-                            kvp.Value.GetType().Name,
-                            kvp.Value
-                        ));
+                Details = new Dictionary<string, FieldInfo>(abstractItem.UntypedFields.Count);
+
+                var filteredDetailsFields = abstractItem.UntypedFields
+                    .FilterByFieldNames(includeFields);
+
+                foreach ((string fieldName, object fieldValue) in filteredDetailsFields)
+                {
+                    Details.Add(fieldName, new FieldInfo(fieldValue));
+                }
             }
 
             static bool IsDeepAvailable(int? deep)
@@ -50,11 +65,5 @@ namespace QA.WidgetPlatform.Api.Models
                 return !deep.HasValue || deep.Value > 0;
             }
         }
-
-        public int Id { get; }
-        public string Alias { get; }
-        public string NodeType { get; }
-        public SiteNode[]? Children { get; }
-        public IDictionary<string, FieldInfo>? Details { get; }
     }
 }

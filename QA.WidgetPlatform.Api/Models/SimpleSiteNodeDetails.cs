@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using QA.DotNetCore.Engine.QpData;
+﻿using QA.DotNetCore.Engine.QpData;
 using QA.WidgetPlatform.Api.Application;
 
 namespace QA.WidgetPlatform.Api.Models
@@ -17,31 +14,17 @@ namespace QA.WidgetPlatform.Api.Models
         public SimpleSiteNodeDetails(UniversalAbstractItem item, IEnumerable<string>? includeFields = null)
         {
             Id = item.Id;
+            Details = new Dictionary<string, FieldInfo>(item.UntypedFields.Count);
 
-            var detailsDto = item.UntypedFields
-                .Where(kvp =>
-                    kvp.Value !=
-                    null); // думаю, косяк в UniversalAbstractItem, отсекать null-значения скорее всего надо там 
+            var filteredDetailsFields = (includeFields is null || !includeFields.Any())
+                ? item.UntypedFields.ExceptSystemNames()
+                : item.UntypedFields.FilterByFieldNames(
+                    new HashSet<string>(includeFields, StringComparer.OrdinalIgnoreCase));
 
-            if (includeFields == null || !includeFields.Any())
+            foreach ((string fieldName, object fieldValue) in filteredDetailsFields)
             {
-                detailsDto = detailsDto
-                    .Where(kvp =>
-                        !Constants.AbstractItemSystemFields.Any(ef =>
-                            ef.Equals(kvp.Key, StringComparison.InvariantCultureIgnoreCase)));
+                Details.Add(fieldName, new FieldInfo(fieldValue));
             }
-            else
-            {
-                detailsDto = detailsDto
-                    .Where(kvp => includeFields.Any(ef => ef.Equals(kvp.Key, StringComparison.OrdinalIgnoreCase)));
-            }
-
-            Details = detailsDto.ToDictionary(kvp => kvp.Key, kvp =>
-                new FieldInfo(
-                    // думаю, нужно использовать справочник возможных типов qp, .net типы тут временно
-                    kvp.Value.GetType().Name,
-                    kvp.Value
-                ));
         }
     }
 }
