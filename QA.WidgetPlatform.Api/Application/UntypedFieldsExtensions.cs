@@ -36,7 +36,7 @@
         {
             var fieldName = fieldNameValuePair.Key;
 
-            return Constants.AbstractItemSystemFields.Contains(fieldName);
+            return !Constants.AbstractItemSystemFields.Contains(fieldName);
         }
 
         public static IEnumerable<KeyValuePair<string, object>> FilterByFieldNames(
