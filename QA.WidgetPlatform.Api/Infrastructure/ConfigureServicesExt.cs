@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
+using QA.DotNetCore.Caching;
+using QA.DotNetCore.Caching.Interfaces;
 using QA.DotNetCore.Engine.CacheTags.Configuration;
 using QA.DotNetCore.Engine.Persistent.Interfaces.Settings;
 using QA.DotNetCore.Engine.QpData.Configuration;
@@ -62,6 +64,7 @@ namespace QA.WidgetPlatform.Api.Infrastructure
 
             //подключение сервисов для работы кештегов
             var builder = services.AddCacheTagServices();
+            services.AddSingleton<IModificationStateStorage, DefaultModificationStateStorage>();
             services.AddScoped<ISiteStructureService, SiteStructureService>();
             services.TryAddSingleton<ITargetingFiltersFactory, EmptyTargetingFiltersFactory>();
 
