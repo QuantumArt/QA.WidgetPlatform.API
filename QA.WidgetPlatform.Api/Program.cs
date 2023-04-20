@@ -1,3 +1,4 @@
+using QA.DotNetCore.Engine.CacheTags.Configuration;
 using QA.WidgetPlatform.Api.Application.Middleware;
 using QA.WidgetPlatform.Api.Infrastructure;
 
@@ -18,6 +19,7 @@ builder.Services.ConfigureBaseServices(builder.Configuration);
 var app = builder.Build();
 
 app.UseMiddleware<StatusCodeExceptionHandlerMiddleware>();
+app.UseCacheTagsInvalidation();
 app.UseRouting();
 app.UseCors();
 app.UseAuthorization();
