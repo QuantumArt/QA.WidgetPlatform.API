@@ -23,16 +23,16 @@ namespace QA.WidgetPlatform.Api.Models
             UniversalAbstractItem abstractItem,
             ITargetingFilter targetingFlt,
             ICollection<string> includeFields,
-            int? deep = null, bool isDefinitionFields = false)
+            int? deep = null, bool fillDefinitionDetails = false)
         {
             Id = abstractItem.Id;
             Alias = abstractItem.Alias;
             NodeType = abstractItem.Type;
 
-            if (isDefinitionFields)
+            if (fillDefinitionDetails)
             {
-                FrontModuleUrl = abstractItem.Definition?.FrontModuleUrl;
-                FrontModuleName = abstractItem.Definition?.FrontModuleName;
+                FrontModuleUrl = abstractItem.DefinitionDetails?.FrontModuleUrl;
+                FrontModuleName = abstractItem.DefinitionDetails?.FrontModuleName;
             }
 
             if (IsDeepAvailable(deep--))
@@ -50,7 +50,7 @@ namespace QA.WidgetPlatform.Api.Models
                     for (int i = 0; i < abstractItemChildren.Length; i++)
                     {
                         var child = abstractItemChildren[i];
-                        Children[i] = new SiteNode(child, targetingFlt, includeFields, deep, isDefinitionFields);
+                        Children[i] = new SiteNode(child, targetingFlt, includeFields, deep, fillDefinitionDetails);
                     }
                 }
             }

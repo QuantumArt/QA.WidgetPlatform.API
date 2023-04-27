@@ -15,11 +15,11 @@ namespace QA.WidgetPlatform.Api.Services.Abstract
         /// <param name="targeting">Словарь значений таргетирования. Ключи начинаются с "t"</param>
         /// <param name="fields">Поля деталей к выдаче. Если пусто, то детали выдаваться не будут</param>
         /// <param name="deep">Глубина страуктуры, где 0 - это корневой элемент</param>
-        /// <param name="isDefinitionFields">Заполнять дополнительные поля из дефинишена</param>
+        /// <param name="fillDefinitionDetails">Заполнять дополнительные поля из дефинишена</param>
         /// <returns></returns>
         SiteNode Structure(string dnsName,
             IDictionary<string, string> targeting, [FromQuery] string[] fields,
-            int? deep, bool isDefinitionFields = false);
+            int? deep, bool fillDefinitionDetails = false);
 
         /// <summary>
         /// Получение массива нод, удовлетворяющих переданным фильтрам
