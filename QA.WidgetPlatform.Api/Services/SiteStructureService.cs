@@ -53,6 +53,7 @@ namespace QA.WidgetPlatform.Api.Services
         /// <param name="targeting">Словарь значений таргетирования</param>
         /// <param name="fields">Поля деталей к выдаче. Если пусто, то детали выдаваться не будут</param>
         /// <param name="deep">Глубина страуктуры, где 0 - это корневой элемент</param>
+        /// <param name="isDefinitionFields">Заполнять дополнительные поля из дефинишена</param>
         /// <returns></returns>
         [HttpGet("structure")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -62,7 +63,7 @@ namespace QA.WidgetPlatform.Api.Services
             string dnsName,
             IDictionary<string, string> targeting,
             string[] fields,
-            int? deep)
+            int? deep, bool isDefinitionFields = false)
         {
             var storage = _abstractItemStorageProvider.Get();
 
@@ -75,7 +76,7 @@ namespace QA.WidgetPlatform.Api.Services
             var pagesFilters = new OnlyPagesFilter().AddFilter(startPageFilter);
             var includeFields = new HashSet<string>(fields, StringComparer.OrdinalIgnoreCase);
 
-            return new SiteNode(startPage, pagesFilters, includeFields, deep);
+            return new SiteNode(startPage, pagesFilters, includeFields, deep, isDefinitionFields);
         }
 
         /// <summary>

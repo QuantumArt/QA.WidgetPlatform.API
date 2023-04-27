@@ -14,6 +14,8 @@ namespace QA.WidgetPlatform.Api.Models
         public int Id { get; }
         public string Alias { get; }
         public string NodeType { get; }
+        public string? FrontModuleUrl { get; }
+        public string? FrontModuleName { get; }
         public SiteNode[]? Children { get; }
         public IDictionary<string, FieldInfo>? Details { get; }
 
@@ -21,11 +23,17 @@ namespace QA.WidgetPlatform.Api.Models
             UniversalAbstractItem abstractItem,
             ITargetingFilter targetingFlt,
             ICollection<string> includeFields,
-            int? deep = null)
+            int? deep = null, bool isDefinitionFields = false)
         {
             Id = abstractItem.Id;
             Alias = abstractItem.Alias;
             NodeType = abstractItem.Type;
+
+            if (isDefinitionFields)
+            {
+                FrontModuleUrl = abstractItem.Definition?.FrontModuleUrl;
+                FrontModuleName = abstractItem.Definition?.FrontModuleName;
+            }
 
             if (IsDeepAvailable(deep--))
             {
@@ -42,7 +50,7 @@ namespace QA.WidgetPlatform.Api.Models
                     for (int i = 0; i < abstractItemChildren.Length; i++)
                     {
                         var child = abstractItemChildren[i];
-                        Children[i] = new SiteNode(child, targetingFlt, includeFields, deep);
+                        Children[i] = new SiteNode(child, targetingFlt, includeFields, deep, isDefinitionFields);
                     }
                 }
             }
