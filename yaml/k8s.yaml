@@ -1,26 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: widget-platform-api-deployment-||env||
+  name: "||appName||"
   namespace: "||namespace||"
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: widget-platform-api-||env||
+      app: "||appName||"
   template:
     metadata:
       labels:
-        app: widget-platform-api-||env||
+        app: "||appName||"
         logging: enabled
     spec:
       terminationGracePeriodSeconds: 100
       containers:
-      - image: "||registry||/mts-widget-platform-api:||version||"
-        name: widget-platform-api-||env||
+      - image: "||registry||/||imageName||:||version||"
+        name:  "||appName||"
         envFrom:
         - configMapRef:
-            name: widget-platform-api-config-||env||
+            name: "||configMapName||"
         ports:
         - containerPort: 80
         volumeMounts:
@@ -31,21 +31,6 @@ spec:
             memory: "1Gi"
           requests:
             memory: "512Mi"
-        readinessProbe:
-          httpGet:
-            path: /site/warmup
-            port: 80
-          failureThreshold: 3
-          timeoutSeconds: 150
-          periodSeconds: 43200
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 80
-          initialDelaySeconds: 30
-          periodSeconds: 30
-          failureThreshold: 2
-          timeoutSeconds: 3
       volumes:
       - hostPath:
           path: /usr/share/zoneinfo/Europe/Moscow
@@ -55,32 +40,32 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: widget-platform-api-service-||env||
+  name:  "||appName||"
   namespace: "||namespace||"
 spec:
   ports:
   - port: 80
     targetPort: 80
   selector:
-    app: widget-platform-api-||env||
+    app:  "||appName||"
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: widget-platform-api-ingress-||env||
+  name: "||appName||"
   namespace: "||namespace||"
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
 spec:
   rules:
-  - host: "||host||"
+  - host: "||hostName||"
     http:
       paths:
       - pathType: Prefix
         path: /
         backend:
           service:
-            name: widget-platform-api-service-||env||
+            name: "||appName||"
             port:
               number: 80

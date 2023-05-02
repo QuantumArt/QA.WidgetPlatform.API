@@ -1,39 +1,20 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
+using QA.DotNetCore.Caching;
+using QA.DotNetCore.Caching.Interfaces;
 using QA.DotNetCore.Engine.CacheTags.Configuration;
 using QA.DotNetCore.Engine.Persistent.Interfaces.Settings;
 using QA.DotNetCore.Engine.QpData.Configuration;
 using QA.WidgetPlatform.Api.Services;
 using QA.WidgetPlatform.Api.Services.Abstract;
 using System.Text.Json.Serialization;
+using QA.DotNetCore.Engine.CacheTags;
 
 namespace QA.WidgetPlatform.Api.Infrastructure
 {
     public static class ConfigureServicesExt
     {
-        public static IServiceCollection ConfigureBaseServices(this IServiceCollection services, IConfiguration configuration)
-        {
-            var qpSettings = configuration.GetQpSettings();
-            var builder = services.ConfigureBaseServicesWithoutInvalidation(configuration);
-
-            //настройка стратегии инвалидации по кештегам
-            if (qpSettings.IsStage)
-            {
-                //при каждом запросе запускать все зарегистрированные ICacheTagTracker,
-                //чтобы получить все теги по которым нужно сбросить кеш, и сбросить его
-                _ = builder.WithInvalidationByMiddleware(@"^.*\/(__webpack.*|.+\.[a-zA-Z0-9]+)$");//отсекаем левые запросы для статики (для каждого сайта может настраиваться индивидуально)
-            }
-            else
-            {
-                //по таймеру запускать все зарегистрированные ICacheTagTracker,
-                //чтобы получить все теги по которым нужно сбросить кеш, и сбросить его
-                _ = builder.WithInvalidationByTimer();
-            }
-
-            return services;
-        }
-
-        public static ICacheTagConfigurationBuilder ConfigureBaseServicesWithoutInvalidation(
+        public static void ConfigureBaseServices(
             this IServiceCollection services,
             IConfiguration configuration)
         {
@@ -61,11 +42,29 @@ namespace QA.WidgetPlatform.Api.Infrastructure
             });
 
             //подключение сервисов для работы кештегов
-            var builder = services.AddCacheTagServices();
+            services.AddSingleton<IModificationStateStorage, DefaultModificationStateStorage>();
             services.AddScoped<ISiteStructureService, SiteStructureService>();
-            services.TryAddSingleton<ITargetingFiltersFactory, EmptyTargetingFiltersFactory>();
-
-            return builder;
+            services.TryAddSingleton<ITargetingFiltersFactory, EmptyTargetingFiltersFactory>();   
+            
+            var cacheTagService = services.AddCacheTagServices();
+            //настройка стратегии инвалидации по кештегам
+            if (qpSettings.IsStage)
+            {
+                //при каждом запросе запускать все зарегистрированные ICacheTagTracker,
+                //чтобы получить все теги по которым нужно сбросить кеш, и сбросить его
+                _ = cacheTagService.WithInvalidationByMiddleware(@"^.*\/(__webpack.*|.+\.[a-zA-Z0-9]+)$");//отсекаем левые запросы для статики (для каждого сайта может настраиваться индивидуально)
+            }
+            else
+            {
+                //по таймеру запускать все зарегистрированные ICacheTagTracker,
+                //чтобы получить все теги по которым нужно сбросить кеш, и сбросить его
+                _ = cacheTagService.WithInvalidationByTimer();
+            }
+            cacheTagService.WithCacheTrackers(invalidation =>
+            {
+                //QpContentCacheTracker - уже реализованный ICacheTagTracker, который работает на базе механизма CONTENT_MODIFICATION из QP
+                invalidation.Register<QpContentCacheTracker>();
+            });
         }
 
         private static QpSettings GetQpSettings(this IConfiguration configuration) =>
