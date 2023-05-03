@@ -58,13 +58,9 @@ namespace QA.WidgetPlatform.Api.Infrastructure
             services.AddMemoryCache();
             services.AddSiteStructure(siteStructureOptions);
 
-            //подключение сервисов для работы кештегов
-            var builder = services.AddCacheTagServices();
-            services.AddSingleton<IModificationStateStorage, DefaultModificationStateStorage>();
             services.AddScoped<ISiteStructureService, SiteStructureService>();
             services.TryAddSingleton<ITargetingFiltersFactory, EmptyTargetingFiltersFactory>();
-
-            return builder;
+            return services.AddCacheTagServices();
         }
 
         public static QpSettings GetQpSettings(this IConfiguration configuration) =>
