@@ -8,6 +8,7 @@ using QA.DotNetCore.Engine.QpData.Configuration;
 using QA.WidgetPlatform.Api.Services;
 using QA.WidgetPlatform.Api.Services.Abstract;
 using System.Text.Json.Serialization;
+using QA.DotNetCore.Engine.CacheTags;
 
 namespace QA.WidgetPlatform.Api.Infrastructure
 {
@@ -31,7 +32,11 @@ namespace QA.WidgetPlatform.Api.Infrastructure
                 //чтобы получить все теги по которым нужно сбросить кеш, и сбросить его
                 _ = builder.WithInvalidationByTimer();
             }
-
+            builder.WithCacheTrackers(invalidation =>
+            {
+                //QpContentCacheTracker - уже реализованный ICacheTagTracker, который работает на базе механизма CONTENT_MODIFICATION из QP
+                invalidation.Register<QpContentCacheTracker>();
+            });
             return services;
         }
 
