@@ -16,7 +16,7 @@ namespace QA.WidgetPlatform.Api.Infrastructure
         public static IServiceCollection ConfigureBaseServices(this IServiceCollection services, IConfiguration configuration)
         {
             var qpSettings = configuration.GetQpSettings();
-            var builder = services.ConfigureBaseServicesWithoutInvalidation(configuration);
+            var builder = services.ConfigureBaseServicesWithoutInvalidation(options => options.UseQpSettings(qpSettings));
 
             //настройка стратегии инвалидации по кештегам
             if (qpSettings.IsStage)
@@ -37,7 +37,7 @@ namespace QA.WidgetPlatform.Api.Infrastructure
 
         public static ICacheTagConfigurationBuilder ConfigureBaseServicesWithoutInvalidation(
             this IServiceCollection services,
-            IConfiguration configuration)
+            Action<SiteStructureOptions> siteStructureOptions)
         {
             services.AddHealthChecks();
             services.AddControllers().AddJsonOptions(options =>
@@ -56,11 +56,7 @@ namespace QA.WidgetPlatform.Api.Infrastructure
             });
 
             services.AddMemoryCache();
-            var qpSettings = configuration.GetQpSettings();
-            services.AddSiteStructure(options =>
-            {
-                options.UseQpSettings(qpSettings);
-            });
+            services.AddSiteStructure(siteStructureOptions);
 
             //подключение сервисов для работы кештегов
             var builder = services.AddCacheTagServices();
@@ -71,7 +67,7 @@ namespace QA.WidgetPlatform.Api.Infrastructure
             return builder;
         }
 
-        private static QpSettings GetQpSettings(this IConfiguration configuration) =>
+        public static QpSettings GetQpSettings(this IConfiguration configuration) =>
             configuration.GetSection("QpSettings").Get<QpSettings>();
     }
 }
