@@ -10,6 +10,8 @@ namespace QA.WidgetPlatform.Api.Models
     public class WidgetDetails : SiteNodeDetails
     {
         public string Zone { get; set; }
+        public string? FrontModuleUrl { get; }
+        public string? FrontModuleName { get; }
         public string[]? AllowedUrlPatterns { get; set; }
         public string[]? DeniedUrlPatterns { get; set; }
         /// <summary>
@@ -20,12 +22,19 @@ namespace QA.WidgetPlatform.Api.Models
         [JsonIgnore]
         public int SortOrder { get; set; }
 
-        public WidgetDetails(UniversalWidget widget, Func<IAbstractItem, IDictionary<string, WidgetDetails[]>> getChildrenFunc) : base(widget)
+        public WidgetDetails(UniversalWidget widget, Func<IAbstractItem, IDictionary<string, WidgetDetails[]>> getChildrenFunc,
+            bool fillDefinitionDetails = false) : base(widget)
         {
             Zone = widget.ZoneName;
             AllowedUrlPatterns = widget.AllowedUrlPatterns;
             DeniedUrlPatterns = widget.DeniedUrlPatterns;
             SortOrder = widget.SortOrder;
+
+            if (fillDefinitionDetails)
+            {
+                FrontModuleUrl = widget.DefinitionDetails?.FrontModuleUrl;
+                FrontModuleName = widget.DefinitionDetails?.FrontModuleName;
+            }
 
             ChildWidgets = getChildrenFunc(widget);
 
