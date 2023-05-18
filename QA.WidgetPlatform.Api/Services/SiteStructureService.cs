@@ -27,23 +27,8 @@ namespace QA.WidgetPlatform.Api.Services
         public void Warmup()
         {
             _logger.LogInformation("Warmup start");
-            var storage = _abstractItemStorageProvider.Get();
-            LazyLoad(storage.Root as AbstractItem);
+            _abstractItemStorageProvider.Get();
             _logger.LogInformation("Warmup end");
-
-            void LazyLoad(AbstractItem? item)
-            {
-                if (item == null)
-                    return;
-                // При уходе от использования memoryCache для хранения данных,
-                // необходимость в прогреве отпадет
-                item.GetDetail(string.Empty, string.Empty);
-
-                foreach (var child in item.GetChildren())
-                {
-                    LazyLoad(child as AbstractItem);
-                }
-            }
         }
 
         /// <summary>

@@ -14,11 +14,12 @@ namespace QA.WidgetPlatform.Api.Models
         public SimpleSiteNodeDetails(UniversalAbstractItem item, IEnumerable<string>? includeFields = null)
         {
             Id = item.Id;
-            Details = new Dictionary<string, FieldInfo>(item.UntypedFields.Count);
+            var untypedFields = item.GetUntypedFields();
+            Details = new Dictionary<string, FieldInfo>(untypedFields.Count);
 
             var filteredDetailsFields = (includeFields is null || !includeFields.Any())
-                ? item.UntypedFields.ExceptSystemNames()
-                : item.UntypedFields.FilterByFieldNames(
+                ? untypedFields.ExceptSystemNames()
+                : untypedFields.FilterByFieldNames(
                     new HashSet<string>(includeFields, StringComparer.OrdinalIgnoreCase));
 
             foreach ((string fieldName, object fieldValue) in filteredDetailsFields)

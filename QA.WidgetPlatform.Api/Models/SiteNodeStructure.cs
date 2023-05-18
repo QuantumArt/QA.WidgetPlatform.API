@@ -57,9 +57,10 @@ namespace QA.WidgetPlatform.Api.Models
 
             if (includeFields.Count > 0)
             {
-                Details = new Dictionary<string, FieldInfo>(abstractItem.UntypedFields.Count);
+                var untypedFields = abstractItem.GetUntypedFields();
+                Details = new Dictionary<string, FieldInfo>(untypedFields.Count);
 
-                var filteredDetailsFields = abstractItem.UntypedFields
+                var filteredDetailsFields = untypedFields
                     .FilterByFieldNames(includeFields);
 
                 foreach ((string fieldName, object fieldValue) in filteredDetailsFields)
