@@ -98,7 +98,7 @@ namespace QA.WidgetPlatform.Api.Services
         {
             var storage = _abstractItemStorageProvider.Get();
 
-            var node = storage.Get<UniversalPage>(nodeId);
+            var node = storage.Get<UniversalAbstractItem>(nodeId);
 
             if (node == null)
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
