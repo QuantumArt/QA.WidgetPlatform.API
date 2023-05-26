@@ -78,12 +78,14 @@ namespace QA.WidgetPlatform.Api.Controllers
         /// <param name="abstractItemId">id страницы или виджета</param>
         /// <param name="targeting">Словарь значений таргетирования</param>
         /// <param name="zones">Список виджетных зон (если не передавать, то поиск виджетов не будет производиться для рекурсивных и глобальных зон)</param>
+        /// <param name="fillDefinitionDetails">Заполнять дополнительные поля из дефинишена</param>
         /// <returns></returns>
         [HttpGet("widgets/{abstractItemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IDictionary<string, WidgetDetails[]> WidgetsForNode(int abstractItemId,
-            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] zones)
-            => _siteStructureService.WidgetsForNode(abstractItemId, targeting, zones);
+            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] zones,
+            bool fillDefinitionDetails = false)
+            => _siteStructureService.WidgetsForNode(abstractItemId, targeting, zones, fillDefinitionDetails);
     }
 }
