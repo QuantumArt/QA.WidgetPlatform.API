@@ -112,9 +112,10 @@ namespace QA.WidgetPlatform.Api.Services
         /// <param name="abstractItemId">id страницы или виджета</param>
         /// <param name="targeting">Словарь значений таргетирования</param>
         /// <param name="zones">Список виджетных зон (если не передавать, то поиск виджетов не будет производиться для рекурсивных и глобальных зон)</param>
+        /// <param name="fillDefinitionDetails">Заполнять дополнительные поля из дефинишена</param>
         /// <returns></returns>
         public IDictionary<string, WidgetDetails[]> WidgetsForNode(int abstractItemId,
-            IDictionary<string, string> targeting, string[] zones)
+            IDictionary<string, string> targeting, string[] zones, bool fillDefinitionDetails = false)
         {
             var storage = _abstractItemStorageProvider.Get();
             var abstractItem = storage.Get<UniversalAbstractItem>(abstractItemId);
@@ -147,7 +148,7 @@ namespace QA.WidgetPlatform.Api.Services
                                 : zones.Where(z => ZoneIsRecursive(z)).ToArray())
                             : zones;
 
-                        var widgetGroups = ChildWidgetsGroupedByZone(currentPage, targetingFilter, zonesToSearch);
+                        var widgetGroups = ChildWidgetsGroupedByZone(currentPage, targetingFilter, fillDefinitionDetails, zonesToSearch);
                         foreach (var kvp in widgetGroups)
                         {
                             if (result.ContainsKey(kvp.Key))
@@ -166,20 +167,20 @@ namespace QA.WidgetPlatform.Api.Services
                 }
                 else
                 {
-                    result = ChildWidgetsGroupedByZone(abstractItem, targetingFilter, zones);
+                    result = ChildWidgetsGroupedByZone(abstractItem, targetingFilter, fillDefinitionDetails, zones);
                 }
             }
             else
             {
                 //если зоны явно не переданы в этот метод - возвращаем виджеты у текущей страницы во всех зонах
-                result = ChildWidgetsGroupedByZone(abstractItem, targetingFilter);
+                result = ChildWidgetsGroupedByZone(abstractItem, targetingFilter, fillDefinitionDetails);
             }
 
             return result;
         }
 
         private Dictionary<string, WidgetDetails[]> ChildWidgetsGroupedByZone(IAbstractItem item,
-            ITargetingFilter filter, IEnumerable<string>? zones = null)
+            ITargetingFilter filter, bool fillDefinitionDetails, IEnumerable<string>? zones = null)
         {
             return item
                 .GetChildren<UniversalWidget>(filter)
@@ -188,7 +189,9 @@ namespace QA.WidgetPlatform.Api.Services
                 .GroupBy(w => w.ZoneName)
                 .ToDictionary(g => g.Key,
                     g => g.Select(w =>
-                            new WidgetDetails(w, abstractItem => ChildWidgetsGroupedByZone(abstractItem, filter)))
+                            new WidgetDetails(w,
+                                abstractItem => ChildWidgetsGroupedByZone(abstractItem, filter, fillDefinitionDetails),
+                                fillDefinitionDetails))
                         .ToArray());
         }
 
