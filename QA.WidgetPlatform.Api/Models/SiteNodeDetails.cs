@@ -18,10 +18,10 @@ namespace QA.WidgetPlatform.Api.Models
             Id = item.Id;
             Alias = item.Alias;
             NodeType = item.Type;
+            var untypedFields = item.GetUntypedFields();
+            Details = new Dictionary<string, FieldInfo>(untypedFields.Count);
 
-            Details = new Dictionary<string, FieldInfo>(item.UntypedFields.Count);
-
-            var filteredDetailsFields = item.UntypedFields
+            var filteredDetailsFields = untypedFields
                 .ExceptSystemNames()
                 .ExceptFieldNames(excludeFields);
 
