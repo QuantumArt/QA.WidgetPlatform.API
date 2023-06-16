@@ -33,4 +33,4 @@ msbuild.wrn
 **/.idea/*
 
 # configs with connection strings
-appsettings.*.json
+**/appsettings.*.json
