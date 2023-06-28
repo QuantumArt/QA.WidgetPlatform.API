@@ -1,31 +1,54 @@
 using QA.DotNetCore.Engine.CacheTags.Configuration;
 using QA.WidgetPlatform.Api.Application.Middleware;
 using QA.WidgetPlatform.Api.Infrastructure;
+using NLog.Web;
+using NLog;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddCors(options =>
+var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+logger.Debug("Init WP.API service");
+try
 {
-    options.AddDefaultPolicy(policyBuilder =>
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Logging.ClearProviders();
+    builder.Host.UseNLog();
+    builder.WebHost.SuppressStatusMessages(true);
+
+    builder.Services.AddCors(options =>
     {
-        policyBuilder.WithOrigins(
-            builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ??
-            Array.Empty<string>());
+        options.AddDefaultPolicy(policyBuilder =>
+        {
+            policyBuilder.WithOrigins(
+                builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ??
+                Array.Empty<string>());
+        });
     });
-});
 
-builder.Services.ConfigureBaseServices(builder.Configuration);
+    builder.Services.ConfigureBaseServices(builder.Configuration);
 
-var app = builder.Build();
+    var app = builder.Build();
 
-app.UseMiddleware<StatusCodeExceptionHandlerMiddleware>();
-app.UseCacheTagsInvalidation();
-app.UseRouting();
-app.UseCors();
-app.UseAuthorization();
-app.UseSwaggerUI();
-app.MapControllers();
-app.MapSwagger();
-app.MapHealthChecks("/health");
+    app.UseMiddleware<StatusCodeExceptionHandlerMiddleware>();
+    app.UseCacheTagsInvalidation();
+    app.UseRouting();
+    app.UseCors();
+    app.UseAuthorization();
+    app.UseSwaggerUI();
+    app.MapControllers();
+    app.MapSwagger();
+    app.MapHealthChecks("/health");
 
-app.Run();
+    app.Run();
+
+}
+catch (Exception exception)
+{
+    // NLog: catch setup errors
+    logger.Error(exception, "Stopped program because of exception");
+    throw;
+}
+finally
+{
+    // Ensure to flush and stop internal timers/threads before application-exit (Avoid segmentation fault on Linux)
+    LogManager.Shutdown();
+}
+
