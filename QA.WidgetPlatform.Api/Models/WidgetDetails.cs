@@ -19,7 +19,6 @@ namespace QA.WidgetPlatform.Api.Models
         /// </summary>
         public IDictionary<string, WidgetDetails[]>? ChildWidgets { get; set; }
 
-        [JsonIgnore]
         public int SortOrder { get; set; }
 
         public WidgetDetails(UniversalWidget widget, Func<IAbstractItem, IDictionary<string, WidgetDetails[]>> getChildrenFunc,
