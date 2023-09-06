@@ -9,6 +9,8 @@ using QA.WidgetPlatform.Api.Services;
 using QA.WidgetPlatform.Api.Services.Abstract;
 using System.Text.Json.Serialization;
 using QA.DotNetCore.Engine.CacheTags;
+using Microsoft.Extensions.Configuration;
+using QA.WidgetPlatform.Api.Settings;
 
 namespace QA.WidgetPlatform.Api.Infrastructure
 {
@@ -17,7 +19,7 @@ namespace QA.WidgetPlatform.Api.Infrastructure
         public static IServiceCollection ConfigureBaseServices(this IServiceCollection services, IConfiguration configuration)
         {
             var qpSettings = configuration.GetQpSettings();
-            var builder = services.ConfigureBaseServicesWithoutInvalidation(options => options.UseQpSettings(qpSettings));
+            var builder = services.ConfigureBaseServicesWithoutInvalidation(options => options.UseQpSettings(qpSettings), configuration);
 
             //настройка стратегии инвалидации по кештегам
             if (qpSettings.IsStage)
@@ -42,7 +44,8 @@ namespace QA.WidgetPlatform.Api.Infrastructure
 
         public static ICacheTagConfigurationBuilder ConfigureBaseServicesWithoutInvalidation(
             this IServiceCollection services,
-            Action<SiteStructureOptions> siteStructureOptions)
+            Action<SiteStructureOptions> siteStructureOptions,
+            IConfiguration configuration)
         {
             services.AddHealthChecks();
             services.AddControllers().AddJsonOptions(options =>
@@ -64,7 +67,18 @@ namespace QA.WidgetPlatform.Api.Infrastructure
             services.AddSiteStructure(siteStructureOptions);
 
             services.AddScoped<ISiteStructureService, SiteStructureService>();
-            services.TryAddSingleton<ITargetingFiltersFactory, EmptyTargetingFiltersFactory>();
+            services.Configure<TargetingFilterSettings>(configuration.GetSection("TargetingFilterSettings"));
+            
+            //map targeting filter factory
+            var targetingFilter = configuration.GetSection("TargetingFilterSettings").Get<TargetingFilterSettings>();
+            if (targetingFilter?.UseRegionFilter ?? false)
+            {
+                services.TryAddSingleton<ITargetingFiltersFactory, RegionTargetingFiltersFactory>();
+            }
+            else
+            {
+                services.TryAddSingleton<ITargetingFiltersFactory, EmptyTargetingFiltersFactory>();
+            }
             return services.AddCacheTagServices();
         }
 
