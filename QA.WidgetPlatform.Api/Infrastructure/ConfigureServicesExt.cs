@@ -1,16 +1,14 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
-using QA.DotNetCore.Caching;
-using QA.DotNetCore.Caching.Interfaces;
+using QA.DotNetCore.Engine.Abstractions.Targeting;
+using QA.DotNetCore.Engine.CacheTags;
 using QA.DotNetCore.Engine.CacheTags.Configuration;
 using QA.DotNetCore.Engine.Persistent.Interfaces.Settings;
 using QA.DotNetCore.Engine.QpData.Configuration;
 using QA.WidgetPlatform.Api.Services;
 using QA.WidgetPlatform.Api.Services.Abstract;
-using System.Text.Json.Serialization;
-using QA.DotNetCore.Engine.CacheTags;
-using Microsoft.Extensions.Configuration;
 using QA.WidgetPlatform.Api.Settings;
+using System.Text.Json.Serialization;
 
 namespace QA.WidgetPlatform.Api.Infrastructure
 {
