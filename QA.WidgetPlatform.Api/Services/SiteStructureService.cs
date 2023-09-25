@@ -6,7 +6,7 @@ using QA.DotNetCore.Engine.Widgets;
 using QA.WidgetPlatform.Api.Application.Exceptions;
 using QA.WidgetPlatform.Api.Models;
 using QA.WidgetPlatform.Api.Services.Abstract;
-using QA.WidgetPlatform.Api.TargetingFilters;
+using QA.WidgetPlatform.Targeting.Filters;
 
 namespace QA.WidgetPlatform.Api.Services
 {

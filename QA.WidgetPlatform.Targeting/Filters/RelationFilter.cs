@@ -1,23 +1,26 @@
-﻿using QA.DotNetCore.Engine.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using QA.DotNetCore.Engine.Abstractions;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.DotNetCore.Engine.QpData;
 
-namespace QA.WidgetPlatform.Api.TargetingFilters
+namespace QA.WidgetPlatform.Targeting.Filters
 {
-    public class RegionFilter : BaseTargetingFilter
+    public class RelationFilter : BaseTargetingFilter
     {
+        private readonly Func<AbstractItem, IEnumerable<int>> _getRelationIds;
+        private readonly ICollection<int> _ids;
         private readonly ILogger _logger;
-        private readonly ICollection<int> _regionIds;
 
-        public RegionFilter(ICollection<int> regionIds, ILogger logger)
+        public RelationFilter(Func<AbstractItem, IEnumerable<int>> getRelationIds, ICollection<int> ids, ILogger logger)
         {
-            _regionIds = regionIds;
+            _getRelationIds = getRelationIds;
+            _ids = ids;
             _logger = logger;
         }
 
         public override bool Match(IAbstractItem item)
         {
-            if (_regionIds.Count == 0)
+            if (_ids.Count == 0)
             {
                 return true;
             }
@@ -30,8 +33,8 @@ namespace QA.WidgetPlatform.Api.TargetingFilters
                 return false;
             }
 
-            return !uai.RegionIds.Any() || uai.RegionIds.Any(_regionIds.Contains);
-
+            var _relationIds = _getRelationIds(uai);            
+            return !_relationIds.Any() || _relationIds.Any(_ids.Contains);
         }
     }
 }

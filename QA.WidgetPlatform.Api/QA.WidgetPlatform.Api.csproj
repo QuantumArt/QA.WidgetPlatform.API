@@ -7,9 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="QA.WidgetPlatform.Targeting.Region.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.0" />
     <PackageReference Include="QA.DotNetCore.Engine.QpData.Configuration" Version="3.2.12" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QA.WidgetPlatform.Targeting\QA.WidgetPlatform.Targeting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="QA.WidgetPlatform.Targeting.Region.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <PropertyGroup>

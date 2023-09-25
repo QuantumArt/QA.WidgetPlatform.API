@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using QA.DotNetCore.Engine.Abstractions.Targeting;
-using QA.WidgetPlatform.Api.TargetingFilters;
+﻿using QA.DotNetCore.Engine.Abstractions.Targeting;
+using QA.WidgetPlatform.Targeting.Filters;
 
-namespace QA.WidgetPlatform.Api
+namespace QA.WidgetPlatform.Targeting.Factories
 {
     public class EmptyTargetingFiltersFactory : ITargetingFiltersFactory
     {

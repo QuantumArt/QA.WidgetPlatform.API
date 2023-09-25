@@ -1,13 +1,10 @@
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
-using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.DotNetCore.Engine.CacheTags;
 using QA.DotNetCore.Engine.CacheTags.Configuration;
 using QA.DotNetCore.Engine.Persistent.Interfaces.Settings;
 using QA.DotNetCore.Engine.QpData.Configuration;
 using QA.WidgetPlatform.Api.Services;
 using QA.WidgetPlatform.Api.Services.Abstract;
-using QA.WidgetPlatform.Api.Settings;
 using System.Text.Json.Serialization;
 
 namespace QA.WidgetPlatform.Api.Infrastructure
@@ -65,18 +62,7 @@ namespace QA.WidgetPlatform.Api.Infrastructure
             services.AddSiteStructure(siteStructureOptions);
 
             services.AddScoped<ISiteStructureService, SiteStructureService>();
-            services.Configure<TargetingFilterSettings>(configuration.GetSection("TargetingFilterSettings"));
-            
-            //map targeting filter factory
-            var targetingFilter = configuration.GetSection("TargetingFilterSettings").Get<TargetingFilterSettings>();
-            if (targetingFilter?.UseRegionFilter ?? false)
-            {
-                services.TryAddSingleton<ITargetingFiltersFactory, RegionTargetingFiltersFactory>();
-            }
-            else
-            {
-                services.TryAddSingleton<ITargetingFiltersFactory, EmptyTargetingFiltersFactory>();
-            }
+
             return services.AddCacheTagServices();
         }
 

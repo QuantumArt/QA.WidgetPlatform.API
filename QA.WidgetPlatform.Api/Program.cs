@@ -3,6 +3,7 @@ using QA.WidgetPlatform.Api.Application.Middleware;
 using QA.WidgetPlatform.Api.Infrastructure;
 using NLog.Web;
 using NLog;
+using QA.WidgetPlatform.Targeting.Extensions;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("Init WP.API service");
@@ -24,6 +25,7 @@ try
     });
 
     builder.Services.ConfigureBaseServices(builder.Configuration);
+    builder.Services.ConfigureTargetingServices(builder.Configuration);
 
     var app = builder.Build();
 
