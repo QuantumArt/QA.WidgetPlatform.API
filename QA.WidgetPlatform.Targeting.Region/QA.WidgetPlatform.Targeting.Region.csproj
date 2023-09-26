@@ -7,7 +7,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\QA.WidgetPlatform.Targeting\QA.WidgetPlatform.Targeting.csproj" />
+    <PackageReference Include="QA.DotNetCore.Engine.Targeting" Version="3.2.14-beta3" />
   </ItemGroup>
-
+  <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+    <PostBuildEvent>
+      xcopy "$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\$(MSBuildProjectName).pdb" "$(MSBuildProjectDirectory)\..\QA.WidgetPlatform.Api\bin\$(Configuration)\$(TargetFramework)\" /y
+      xcopy "$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\$(MSBuildProjectName).dll" "$(MSBuildProjectDirectory)\..\QA.WidgetPlatform.Api\bin\$(Configuration)\$(TargetFramework)\" /y
+      xcopy "$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\$(MSBuildProjectName).pdb" "$(MSBuildProjectDirectory)\..\QA.WidgetPlatform.Api\bin\$(Configuration)\$(TargetFramework)\publish\" /y
+      xcopy "$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\$(MSBuildProjectName).dll" "$(MSBuildProjectDirectory)\..\QA.WidgetPlatform.Api\bin\$(Configuration)\$(TargetFramework)\publish\" /y
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(OS)' != 'Windows_NT' ">
+    <PostBuildEvent>
+      cp "$(MSBuildProjectDirectory)/bin/$(Configuration)/$(TargetFramework)/$(MSBuildProjectName).pdb" "$(MSBuildProjectDirectory)/../QA.WidgetPlatform.Api/bin/$(Configuration)/$(TargetFramework)/"
+      cp "$(MSBuildProjectDirectory)/bin/$(Configuration)/$(TargetFramework)/$(MSBuildProjectName).dll" "$(MSBuildProjectDirectory)/../QA.WidgetPlatform.Api/bin/$(Configuration)/$(TargetFramework)/"
+      cp "$(MSBuildProjectDirectory)/bin/$(Configuration)/$(TargetFramework)/$(MSBuildProjectName).pdb" "$(MSBuildProjectDirectory)/../QA.WidgetPlatform.Api/bin/$(Configuration)/$(TargetFramework)/"
+      cp "$(MSBuildProjectDirectory)/bin/$(Configuration)/$(TargetFramework)/$(MSBuildProjectName).dll" "$(MSBuildProjectDirectory)/../QA.WidgetPlatform.Api/bin/$(Configuration)/$(TargetFramework)/"
+    </PostBuildEvent>
+  </PropertyGroup>
 </Project>

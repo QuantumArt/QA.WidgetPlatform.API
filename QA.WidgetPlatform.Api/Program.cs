@@ -1,9 +1,9 @@
+using NLog;
+using NLog.Web;
 using QA.DotNetCore.Engine.CacheTags.Configuration;
+using QA.DotNetCore.Engine.Targeting.Configuration;
 using QA.WidgetPlatform.Api.Application.Middleware;
 using QA.WidgetPlatform.Api.Infrastructure;
-using NLog.Web;
-using NLog;
-using QA.WidgetPlatform.Targeting.Extensions;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("Init WP.API service");
@@ -25,7 +25,7 @@ try
     });
 
     builder.Services.ConfigureBaseServices(builder.Configuration);
-    builder.Services.ConfigureTargetingServices(builder.Configuration);
+    builder.Services.AddApiTargeting(builder.Configuration);
 
     var app = builder.Build();
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
-using QA.WidgetPlatform.Targeting.Extensions;
+using QA.DotNetCore.Engine.Targeting.Factories;
 
 namespace QA.WidgetPlatform.Targeting.Region
 {
