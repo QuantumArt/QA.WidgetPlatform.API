@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QA.WidgetPlatform.Api", "QA.WidgetPlatform.Api\QA.WidgetPlatform.Api.csproj", "{42A89D63-8EFD-4312-A22A-B3F6691B211E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QA.WidgetPlatform.Targeting.Region", "QA.WidgetPlatform.Targeting.Region\QA.WidgetPlatform.Targeting.Region.csproj", "{A1349610-1CD2-49FA-948E-7567C50214CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QA.WidgetPlatform.Targeting", "QA.WidgetPlatform.Targeting\QA.WidgetPlatform.Targeting.csproj", "{A1349610-1CD2-49FA-948E-7567C50214CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -13,14 +13,15 @@ namespace QA.WidgetPlatform.Api.Services
     internal class SiteStructureService : ISiteStructureService
     {
         private readonly IAbstractItemStorageProvider _abstractItemStorageProvider;
-        private readonly ITargetingFiltersFactory _targetingFiltersFactory;
+        private readonly ITargetingFilterAccessor _targetingFiltersAccessor;
         private readonly ILogger<SiteStructureService> _logger;
 
         public SiteStructureService(IAbstractItemStorageProvider abstractItemStorageProvider,
-            ITargetingFiltersFactory targetingFiltersFactory, ILogger<SiteStructureService> logger)
+            ITargetingFilterAccessor targetingFiltersAccessor,
+            ILogger<SiteStructureService> logger)
         {
             _abstractItemStorageProvider = abstractItemStorageProvider;
-            _targetingFiltersFactory = targetingFiltersFactory;
+            _targetingFiltersAccessor = targetingFiltersAccessor;
             _logger = logger;
         }
 
@@ -52,7 +53,7 @@ namespace QA.WidgetPlatform.Api.Services
         {
             var storage = _abstractItemStorageProvider.Get();
 
-            var startPageFilter = _targetingFiltersFactory.StructureFilter(targeting);
+            var startPageFilter = _targetingFiltersAccessor.Get();
 
             var startPage = storage.GetStartPage<UniversalPage>(dnsName, startPageFilter);
             if (startPage == null)
@@ -76,11 +77,9 @@ namespace QA.WidgetPlatform.Api.Services
             string[] fields)
         {
             var storage = _abstractItemStorageProvider.Get();
+            var filter = _targetingFiltersAccessor.Get();
 
-            var startPageFilter = _targetingFiltersFactory.StructureFilter(targeting);
-            var nodeFilter = _targetingFiltersFactory.FlattenNodesFilter(targeting);
-
-            var nodes = storage.GetNodes<UniversalAbstractItem>(dnsName, startPageFilter, nodeFilter);
+            var nodes = storage.GetNodes<UniversalAbstractItem>(dnsName, filter, filter);
 
             if (nodes == null || !nodes.Any())
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
@@ -124,8 +123,10 @@ namespace QA.WidgetPlatform.Api.Services
             if (abstractItem == null)
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
+            var filter = _targetingFiltersAccessor.Get();
+
             var targetingFilter =
-                new OnlyWidgetsFilter().AddFilter(_targetingFiltersFactory.FlattenNodesFilter(targeting));
+                new OnlyWidgetsFilter().AddFilter(filter);
 
             //виджеты, инфу о которых мы вернем в этой методе, могут быть не только у текущей страницы, т.к.
             //если запрашиваются виджеты в рекурсивных зонах, то они могут быть дочерними не для текущей страницы, а для какой-то из её родительских страниц

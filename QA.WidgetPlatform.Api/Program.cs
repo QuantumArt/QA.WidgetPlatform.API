@@ -25,10 +25,13 @@ try
     });
 
     builder.Services.ConfigureBaseServices(builder.Configuration);
-    builder.Services.AddApiTargeting(builder.Configuration);
+
+    builder.Services.AddTargeting();
+    builder.Services.AddExternalTargeting(builder.Configuration);
 
     var app = builder.Build();
 
+    app.UseExternalTargeting();
     app.UseMiddleware<StatusCodeExceptionHandlerMiddleware>();
     app.UseCacheTagsInvalidation();
     app.UseRouting();
@@ -40,7 +43,6 @@ try
     app.MapHealthChecks("/health");
 
     app.Run();
-
 }
 catch (Exception exception)
 {

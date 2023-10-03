@@ -5,10 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="QA.DotNetCore.Engine.Targeting" Version="3.2.14-beta3" />
-  </ItemGroup>
   <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <PostBuildEvent>
       xcopy "$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\$(MSBuildProjectName).pdb" "$(MSBuildProjectDirectory)\..\QA.WidgetPlatform.Api\bin\$(Configuration)\$(TargetFramework)\" /y
@@ -25,4 +21,7 @@
       cp "$(MSBuildProjectDirectory)/bin/$(Configuration)/$(TargetFramework)/$(MSBuildProjectName).dll" "$(MSBuildProjectDirectory)/../QA.WidgetPlatform.Api/bin/$(Configuration)/$(TargetFramework)/"
     </PostBuildEvent>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="QA.DotNetCore.Engine.Targeting" Version="3.2.14-beta5" />
+  </ItemGroup>
 </Project>
