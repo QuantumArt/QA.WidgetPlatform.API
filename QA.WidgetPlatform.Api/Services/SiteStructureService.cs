@@ -14,14 +14,17 @@ namespace QA.WidgetPlatform.Api.Services
     {
         private readonly IAbstractItemStorageProvider _abstractItemStorageProvider;
         private readonly ITargetingFilterAccessor _targetingFiltersAccessor;
+        private readonly ITargetingContextUpdater _targetingUpdater;
         private readonly ILogger<SiteStructureService> _logger;
 
         public SiteStructureService(IAbstractItemStorageProvider abstractItemStorageProvider,
             ITargetingFilterAccessor targetingFiltersAccessor,
-            ILogger<SiteStructureService> logger)
+            ITargetingContextUpdater targetingUpdater,
+        ILogger<SiteStructureService> logger)
         {
             _abstractItemStorageProvider = abstractItemStorageProvider;
             _targetingFiltersAccessor = targetingFiltersAccessor;
+            _targetingUpdater = targetingUpdater;
             _logger = logger;
         }
 
@@ -36,6 +39,7 @@ namespace QA.WidgetPlatform.Api.Services
         /// Получение структуры страниц сайта
         /// </summary>
         /// <param name="dnsName">Доменное имя сайта</param>
+        /// <param name="targeting">Словарь значений таргетирования</param>
         /// <param name="fields">Поля деталей к выдаче. Если пусто, то детали выдаваться не будут</param>
         /// <param name="deep">Глубина страуктуры, где 0 - это корневой элемент</param>
         /// <param name="fillDefinitionDetails">Заполнять дополнительные поля из дефинишена</param>
@@ -46,11 +50,12 @@ namespace QA.WidgetPlatform.Api.Services
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public SiteNode Structure(
             string dnsName,
+            IDictionary<string, string> targeting,
             string[] fields,
             int? deep, bool fillDefinitionDetails = false)
         {
             var storage = _abstractItemStorageProvider.Get();
-
+            _targetingUpdater.Update(targeting).Wait();
             var startPageFilter = _targetingFiltersAccessor.Get();
 
             var startPage = storage.GetStartPage<UniversalPage>(dnsName, startPageFilter);
@@ -67,12 +72,15 @@ namespace QA.WidgetPlatform.Api.Services
         /// Получение массива нод, удовлетворяющих переданным фильтрам
         /// </summary>
         /// <param name="dnsName">Доменное имя сайта</param>
+        /// <param name="targeting">Словарь значений таргетирования</param>
         /// <param name="fields">Поля деталей к выдаче. Если пусто, то будут выведены все детали</param>
         /// <returns></returns>
         public IEnumerable<SimpleSiteNodeDetails> Details(string dnsName,
+            IDictionary<string, string> targeting,
             string[] fields)
         {
             var storage = _abstractItemStorageProvider.Get();
+            _targetingUpdater.Update(targeting).Wait();
             var filter = _targetingFiltersAccessor.Get();
 
             var nodes = storage.GetNodes<UniversalAbstractItem>(dnsName, filter, filter);
@@ -105,11 +113,12 @@ namespace QA.WidgetPlatform.Api.Services
         /// Получение виджетов для страницы или виджета, сгруппированных по зонам
         /// </summary>
         /// <param name="abstractItemId">id страницы или виджета</param>
+        /// <param name="targeting">Словарь значений таргетирования</param>
         /// <param name="zones">Список виджетных зон (если не передавать, то поиск виджетов не будет производиться для рекурсивных и глобальных зон)</param>
         /// <param name="fillDefinitionDetails">Заполнять дополнительные поля из дефинишена</param>
         /// <returns></returns>
         public IDictionary<string, WidgetDetails[]> WidgetsForNode(int abstractItemId,
-            string[] zones, bool fillDefinitionDetails = false)
+            IDictionary<string, string> targeting, string[] zones, bool fillDefinitionDetails = false)
         {
             var storage = _abstractItemStorageProvider.Get();
             var abstractItem = storage.Get<UniversalAbstractItem>(abstractItemId);
@@ -118,6 +127,7 @@ namespace QA.WidgetPlatform.Api.Services
             if (abstractItem == null)
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
+            _targetingUpdater.Update(targeting).Wait();
             var filter = _targetingFiltersAccessor.Get();
 
             var targetingFilter =
