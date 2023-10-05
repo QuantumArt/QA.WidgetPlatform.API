@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc;
+using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.WidgetPlatform.Api.Application;
 using QA.WidgetPlatform.Api.Models;
 using QA.WidgetPlatform.Api.Services.Abstract;
+using System.ComponentModel.DataAnnotations;
 
 namespace QA.WidgetPlatform.Api.Controllers
 {
@@ -13,10 +12,12 @@ namespace QA.WidgetPlatform.Api.Controllers
     public class SiteController : ControllerBase
     {
         private readonly ISiteStructureService _siteStructureService;
+        private readonly ITargetingContextUpdater _updater;
 
-        public SiteController(ISiteStructureService siteStructureService)
+        public SiteController(ISiteStructureService siteStructureService, ITargetingContextUpdater updater)
         {
             _siteStructureService = siteStructureService;
+            _updater = updater;
         }
 
         [HttpGet("[action]")]
@@ -39,10 +40,13 @@ namespace QA.WidgetPlatform.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public SiteNode Structure([Required] [FromQuery] string dnsName,
-            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] fields,
+        public async Task<SiteNode> Structure([Required][FromQuery] string dnsName,
+            [Bind(Prefix = "t")][FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] fields,
             int? deep, bool fillDefinitionDetails = false)
-            => _siteStructureService.Structure(dnsName, targeting, fields, deep, fillDefinitionDetails);
+        {
+            await _updater.Update(HttpContext, targeting);
+            return _siteStructureService.Structure(dnsName, fields, deep, fillDefinitionDetails);
+        }
 
         /// <summary>
         /// Получение массива нод, удовлетворяющих переданным фильтрам
@@ -55,10 +59,13 @@ namespace QA.WidgetPlatform.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IEnumerable<SimpleSiteNodeDetails> Details([Required] [FromQuery] string dnsName,
-            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting,
+        public async Task<IEnumerable<SimpleSiteNodeDetails>> Details([Required][FromQuery] string dnsName,
+            [Bind(Prefix = "t")][FromQuery] CaseInSensitiveDictionary<string> targeting,
             [FromQuery] string[] fields)
-            => _siteStructureService.Details(dnsName, targeting, fields);
+        {
+            await _updater.Update(HttpContext, targeting);
+            return _siteStructureService.Details(dnsName, fields);
+        }
 
         /// <summary>
         /// Получение детальной информации по странице или виджету
@@ -83,9 +90,12 @@ namespace QA.WidgetPlatform.Api.Controllers
         [HttpGet("widgets/{abstractItemId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IDictionary<string, WidgetDetails[]> WidgetsForNode(int abstractItemId,
-            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] zones,
+        public async Task<IDictionary<string, WidgetDetails[]>> WidgetsForNode(int abstractItemId,
+            [Bind(Prefix = "t")][FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] zones,
             bool fillDefinitionDetails = false)
-            => _siteStructureService.WidgetsForNode(abstractItemId, targeting, zones, fillDefinitionDetails);
+        {
+            await _updater.Update(HttpContext, targeting);
+            return _siteStructureService.WidgetsForNode(abstractItemId, zones, fillDefinitionDetails);
+        }
     }
 }

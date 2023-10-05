@@ -20,11 +20,6 @@ namespace QA.WidgetPlatform.Targeting
 
         public void ConfigureTargeting(IApplicationBuilder app)
         {
-            app.UseTargeting(providers =>
-            {
-                providers.Register<QueryTargetingProvider>();
-            });
-
             app.UseSiteStructureFilters(filters =>
             {
                 filters.Register<RegionFilter>();
