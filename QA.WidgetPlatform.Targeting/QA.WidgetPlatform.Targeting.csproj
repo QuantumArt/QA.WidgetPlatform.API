@@ -21,7 +21,4 @@
       cp "$(MSBuildProjectDirectory)/bin/$(Configuration)/$(TargetFramework)/$(MSBuildProjectName).dll" "$(MSBuildProjectDirectory)/../QA.WidgetPlatform.Api/bin/$(Configuration)/$(TargetFramework)/"
     </PostBuildEvent>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="QA.DotNetCore.Engine.Targeting" Version="3.2.14-beta8" />
-  </ItemGroup>
 </Project>
