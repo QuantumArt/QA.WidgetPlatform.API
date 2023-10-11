@@ -56,7 +56,7 @@ namespace QA.WidgetPlatform.Api.Services
         {
             var storage = _abstractItemStorageProvider.Get();
             _targetingUpdater.Update(targeting).Wait();
-            var startPageFilter = _targetingFiltersAccessor.Get();
+            var startPageFilter = _targetingFiltersAccessor.Get(TargetingDestination.Structure);
 
             var startPage = storage.GetStartPage<UniversalPage>(dnsName, startPageFilter);
             if (startPage == null)
@@ -81,9 +81,11 @@ namespace QA.WidgetPlatform.Api.Services
         {
             var storage = _abstractItemStorageProvider.Get();
             _targetingUpdater.Update(targeting).Wait();
-            var filter = _targetingFiltersAccessor.Get();
+            
+            var startPageFilter = _targetingFiltersAccessor.Get(TargetingDestination.Structure);
+            var nodeFilter = _targetingFiltersAccessor.Get(TargetingDestination.Nodes);
 
-            var nodes = storage.GetNodes<UniversalAbstractItem>(dnsName, filter, filter);
+            var nodes = storage.GetNodes<UniversalAbstractItem>(dnsName, startPageFilter, nodeFilter);
 
             if (nodes == null || !nodes.Any())
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
@@ -128,7 +130,7 @@ namespace QA.WidgetPlatform.Api.Services
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
             _targetingUpdater.Update(targeting).Wait();
-            var filter = _targetingFiltersAccessor.Get();
+            var filter = _targetingFiltersAccessor.Get(TargetingDestination.Nodes);
 
             var targetingFilter =
                 new OnlyWidgetsFilter().AddFilter(filter);

@@ -22,8 +22,8 @@ namespace QA.WidgetPlatform.Targeting
         {
             app.UseSiteStructureFilters(filters =>
             {
-                filters.Register<RegionFilter>();
-                filters.Register<CultureFilter>();
+                filters.Register<RegionFilter>(TargetingDestination.Structure, TargetingDestination.Nodes);
+                filters.Register<CultureFilter>(TargetingDestination.Structure, TargetingDestination.Nodes);
             });
         }
     }
