@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.DotNetCore.Engine.Targeting.Configuration;
 using QA.DotNetCore.Engine.Targeting.Filters;
-using QA.DotNetCore.Engine.Targeting.TargetingProviders;
 
 namespace QA.WidgetPlatform.Targeting
 {
@@ -15,7 +14,6 @@ namespace QA.WidgetPlatform.Targeting
         {
             services.TryAddSingleton<RegionFilter>();
             services.TryAddSingleton<CultureFilter>();
-            services.TryAddSingleton<QueryTargetingProvider>();
         }
 
         public void ConfigureTargeting(IApplicationBuilder app)
