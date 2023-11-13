@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30711.63
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QA.WidgetPlatform.Api", "QA.WidgetPlatform.Api\QA.WidgetPlatform.Api.csproj", "{42A89D63-8EFD-4312-A22A-B3F6691B211E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QA.WidgetPlatform.Api", "QA.WidgetPlatform.Api\QA.WidgetPlatform.Api.csproj", "{42A89D63-8EFD-4312-A22A-B3F6691B211E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QA.WidgetPlatform.Targeting", "QA.WidgetPlatform.Targeting\QA.WidgetPlatform.Targeting.csproj", "{A1349610-1CD2-49FA-948E-7567C50214CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{42A89D63-8EFD-4312-A22A-B3F6691B211E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42A89D63-8EFD-4312-A22A-B3F6691B211E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42A89D63-8EFD-4312-A22A-B3F6691B211E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1349610-1CD2-49FA-948E-7567C50214CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1349610-1CD2-49FA-948E-7567C50214CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1349610-1CD2-49FA-948E-7567C50214CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1349610-1CD2-49FA-948E-7567C50214CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -39,8 +39,8 @@ namespace QA.WidgetPlatform.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public SiteNode Structure([Required] [FromQuery] string dnsName,
-            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] fields,
+        public SiteNode Structure([Required][FromQuery] string dnsName,
+            [Bind(Prefix = "t")][FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] fields,
             int? deep, bool fillDefinitionDetails = false)
             => _siteStructureService.Structure(dnsName, targeting, fields, deep, fillDefinitionDetails);
 
@@ -55,8 +55,8 @@ namespace QA.WidgetPlatform.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IEnumerable<SimpleSiteNodeDetails> Details([Required] [FromQuery] string dnsName,
-            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting,
+        public IEnumerable<SimpleSiteNodeDetails> Details([Required][FromQuery] string dnsName,
+            [Bind(Prefix = "t")][FromQuery] CaseInSensitiveDictionary<string> targeting,
             [FromQuery] string[] fields)
             => _siteStructureService.Details(dnsName, targeting, fields);
 
@@ -84,7 +84,7 @@ namespace QA.WidgetPlatform.Api.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IDictionary<string, WidgetDetails[]> WidgetsForNode(int abstractItemId,
-            [Bind(Prefix = "t")] [FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] zones,
+            [Bind(Prefix = "t")][FromQuery] CaseInSensitiveDictionary<string> targeting, [FromQuery] string[] zones,
             bool fillDefinitionDetails = false)
             => _siteStructureService.WidgetsForNode(abstractItemId, targeting, zones, fillDefinitionDetails);
     }

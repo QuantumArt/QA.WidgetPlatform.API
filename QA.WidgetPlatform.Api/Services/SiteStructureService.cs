@@ -2,25 +2,29 @@
 using QA.DotNetCore.Engine.Abstractions;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.DotNetCore.Engine.QpData;
+using QA.DotNetCore.Engine.Targeting.Filters;
 using QA.DotNetCore.Engine.Widgets;
 using QA.WidgetPlatform.Api.Application.Exceptions;
 using QA.WidgetPlatform.Api.Models;
 using QA.WidgetPlatform.Api.Services.Abstract;
-using QA.WidgetPlatform.Api.TargetingFilters;
 
 namespace QA.WidgetPlatform.Api.Services
 {
     internal class SiteStructureService : ISiteStructureService
     {
         private readonly IAbstractItemStorageProvider _abstractItemStorageProvider;
-        private readonly ITargetingFiltersFactory _targetingFiltersFactory;
+        private readonly ITargetingFilterAccessor _targetingFiltersAccessor;
+        private readonly ITargetingContextUpdater _targetingUpdater;
         private readonly ILogger<SiteStructureService> _logger;
 
         public SiteStructureService(IAbstractItemStorageProvider abstractItemStorageProvider,
-            ITargetingFiltersFactory targetingFiltersFactory, ILogger<SiteStructureService> logger)
+            ITargetingFilterAccessor targetingFiltersAccessor,
+            ITargetingContextUpdater targetingUpdater,
+        ILogger<SiteStructureService> logger)
         {
             _abstractItemStorageProvider = abstractItemStorageProvider;
-            _targetingFiltersFactory = targetingFiltersFactory;
+            _targetingFiltersAccessor = targetingFiltersAccessor;
+            _targetingUpdater = targetingUpdater;
             _logger = logger;
         }
 
@@ -51,8 +55,8 @@ namespace QA.WidgetPlatform.Api.Services
             int? deep, bool fillDefinitionDetails = false)
         {
             var storage = _abstractItemStorageProvider.Get();
-
-            var startPageFilter = _targetingFiltersFactory.StructureFilter(targeting);
+            _targetingUpdater.Update(targeting).Wait();
+            var startPageFilter = _targetingFiltersAccessor.Get(TargetingDestination.Structure);
 
             var startPage = storage.GetStartPage<UniversalPage>(dnsName, startPageFilter);
             if (startPage == null)
@@ -76,9 +80,10 @@ namespace QA.WidgetPlatform.Api.Services
             string[] fields)
         {
             var storage = _abstractItemStorageProvider.Get();
-
-            var startPageFilter = _targetingFiltersFactory.StructureFilter(targeting);
-            var nodeFilter = _targetingFiltersFactory.FlattenNodesFilter(targeting);
+            _targetingUpdater.Update(targeting).Wait();
+            
+            var startPageFilter = _targetingFiltersAccessor.Get(TargetingDestination.Structure);
+            var nodeFilter = _targetingFiltersAccessor.Get(TargetingDestination.Nodes);
 
             var nodes = storage.GetNodes<UniversalAbstractItem>(dnsName, startPageFilter, nodeFilter);
 
@@ -124,8 +129,11 @@ namespace QA.WidgetPlatform.Api.Services
             if (abstractItem == null)
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
 
+            _targetingUpdater.Update(targeting).Wait();
+            var filter = _targetingFiltersAccessor.Get(TargetingDestination.Nodes);
+
             var targetingFilter =
-                new OnlyWidgetsFilter().AddFilter(_targetingFiltersFactory.FlattenNodesFilter(targeting));
+                new OnlyWidgetsFilter().AddFilter(filter);
 
             //виджеты, инфу о которых мы вернем в этой методе, могут быть не только у текущей страницы, т.к.
             //если запрашиваются виджеты в рекурсивных зонах, то они могут быть дочерними не для текущей страницы, а для какой-то из её родительских страниц

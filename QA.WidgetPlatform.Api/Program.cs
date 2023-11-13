@@ -1,8 +1,9 @@
+using NLog;
+using NLog.Web;
 using QA.DotNetCore.Engine.CacheTags.Configuration;
+using QA.DotNetCore.Engine.Targeting.Configuration;
 using QA.WidgetPlatform.Api.Application.Middleware;
 using QA.WidgetPlatform.Api.Infrastructure;
-using NLog.Web;
-using NLog;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("Init WP.API service");
@@ -25,8 +26,12 @@ try
 
     builder.Services.ConfigureBaseServices(builder.Configuration);
 
+    builder.Services.AddTargeting();
+    builder.Services.AddExternalTargeting(builder.Configuration);
+
     var app = builder.Build();
 
+    app.UseExternalTargeting();
     app.UseMiddleware<StatusCodeExceptionHandlerMiddleware>();
     app.UseCacheTagsInvalidation();
     app.UseRouting();
@@ -38,7 +43,6 @@ try
     app.MapHealthChecks("/health");
 
     app.Run();
-
 }
 catch (Exception exception)
 {
