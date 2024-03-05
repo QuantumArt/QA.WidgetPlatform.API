@@ -45,9 +45,10 @@ namespace QA.WidgetPlatform.Api.Services.Abstract
         /// <param name="abstractItemId">id страницы или виджета</param>
         /// <param name="targeting">Словарь значений таргетирования</param>
         /// <param name="zones">Список виджетных зон (если не передавать, то поиск виджетов не будет производиться для рекурсивных и глобальных зон)</param>
+        /// <param name="fields">Поля деталей к выдаче. Если пусто, то будут выведены все детали</param>
         /// <param name="fillDefinitionDetails">Заполнять дополнительные поля из дефинишена</param>
         /// <returns></returns>
-        IDictionary<string, WidgetDetails[]> WidgetsForNode(int abstractItemId,
-            IDictionary<string, string> targeting, string[] zones, bool fillDefinitionDetails = false);
+        IDictionary<string, WidgetDetails[]> WidgetsForNode(int abstractItemId, IDictionary<string, string> targeting, 
+            string[] zones, string[]? fields = null, bool fillDefinitionDetails = false);
     }
 }

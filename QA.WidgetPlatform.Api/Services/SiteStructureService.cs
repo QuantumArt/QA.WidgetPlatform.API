@@ -117,10 +117,11 @@ namespace QA.WidgetPlatform.Api.Services
         /// <param name="abstractItemId">id страницы или виджета</param>
         /// <param name="targeting">Словарь значений таргетирования</param>
         /// <param name="zones">Список виджетных зон (если не передавать, то поиск виджетов не будет производиться для рекурсивных и глобальных зон)</param>
+        /// <param name="fields">Поля деталей к выдаче. Если пусто, то будут выведены все детали</param>
         /// <param name="fillDefinitionDetails">Заполнять дополнительные поля из дефинишена</param>
         /// <returns></returns>
         public IDictionary<string, WidgetDetails[]> WidgetsForNode(int abstractItemId,
-            IDictionary<string, string> targeting, string[] zones, bool fillDefinitionDetails = false)
+            IDictionary<string, string> targeting, string[] zones, string[] fields, bool fillDefinitionDetails = false)
         {
             var storage = _abstractItemStorageProvider.Get();
             var abstractItem = storage.Get<UniversalAbstractItem>(abstractItemId);
@@ -156,7 +157,9 @@ namespace QA.WidgetPlatform.Api.Services
                                 : zones.Where(z => ZoneIsRecursive(z)).ToArray())
                             : zones;
 
-                        var widgetGroups = ChildWidgetsGroupedByZone(currentPage, targetingFilter, fillDefinitionDetails, zonesToSearch);
+                        var widgetGroups = ChildWidgetsGroupedByZone(
+                            currentPage, targetingFilter, fillDefinitionDetails, fields, zonesToSearch
+                        );
                         foreach (var kvp in widgetGroups)
                         {
                             if (result.ContainsKey(kvp.Key))
@@ -175,32 +178,43 @@ namespace QA.WidgetPlatform.Api.Services
                 }
                 else
                 {
-                    result = ChildWidgetsGroupedByZone(abstractItem, targetingFilter, fillDefinitionDetails, zones);
+                    result = ChildWidgetsGroupedByZone(abstractItem, targetingFilter, fillDefinitionDetails, fields, zones);
                 }
             }
             else
             {
                 //если зоны явно не переданы в этот метод - возвращаем виджеты у текущей страницы во всех зонах
-                result = ChildWidgetsGroupedByZone(abstractItem, targetingFilter, fillDefinitionDetails);
+                result = ChildWidgetsGroupedByZone(abstractItem, targetingFilter, fillDefinitionDetails, fields);
             }
 
             return result;
         }
 
-        private Dictionary<string, WidgetDetails[]> ChildWidgetsGroupedByZone(IAbstractItem item,
-            ITargetingFilter filter, bool fillDefinitionDetails, IEnumerable<string>? zones = null)
+        private Dictionary<string, WidgetDetails[]> ChildWidgetsGroupedByZone(
+            IAbstractItem item, 
+            ITargetingFilter filter, 
+            bool fillDefinitionDetails, 
+            IEnumerable<string>? fields = null, 
+            IEnumerable<string>? zones = null
+        )
         {
             return item
                 .GetChildren<UniversalWidget>(filter)
                 .OrderBy(ai => ai.SortOrder)
                 .Where(w => w.ZoneName != null && (zones == null || zones.Contains(w.ZoneName)))
                 .GroupBy(w => w.ZoneName)
-                .ToDictionary(g => g.Key,
-                    g => g.Select(w =>
-                            new WidgetDetails(w,
-                                abstractItem => ChildWidgetsGroupedByZone(abstractItem, filter, fillDefinitionDetails),
-                                fillDefinitionDetails))
-                        .ToArray());
+                .ToDictionary(
+                    k => k.Key,
+                    v => v.Select(w =>
+                        new WidgetDetails(w,
+                            abstractItem => ChildWidgetsGroupedByZone(
+                                abstractItem, filter, fillDefinitionDetails, fields
+                            ),
+                            fields,
+                            fillDefinitionDetails
+                        )
+                    ).ToArray()
+                );
         }
 
         private static bool PageContainsGlobalWidgets(IAbstractItem ai)
