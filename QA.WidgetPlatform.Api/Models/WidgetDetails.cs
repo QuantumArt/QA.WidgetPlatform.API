@@ -21,8 +21,10 @@ namespace QA.WidgetPlatform.Api.Models
 
         public int SortOrder { get; set; }
 
-        public WidgetDetails(UniversalWidget widget, Func<IAbstractItem, IDictionary<string, WidgetDetails[]>> getChildrenFunc,
-            bool fillDefinitionDetails = false) : base(widget)
+        public WidgetDetails(UniversalWidget widget, 
+            Func<IAbstractItem, IDictionary<string, WidgetDetails[]>> getChildrenFunc,
+            IEnumerable<string> fields,
+            bool fillDefinitionDetails = false) : base(widget, fields)
         {
             Zone = widget.ZoneName;
             AllowedUrlPatterns = widget.AllowedUrlPatterns;
