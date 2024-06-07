@@ -115,8 +115,7 @@ namespace QA.WidgetPlatform.Api.Services
             }
             else
             {
-                bool includeNullFields = _fieldsSettings.IncludeNullFieldsInNode;
-                return new SiteNodeDetails(node, includeNullFields: includeNullFields);
+                return new SiteNodeDetails(node, includeNullFields: _fieldsSettings.IncludeNullFieldsInNode);
             }
         }
 
