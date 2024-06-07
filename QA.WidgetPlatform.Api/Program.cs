@@ -4,6 +4,7 @@ using QA.DotNetCore.Engine.CacheTags.Configuration;
 using QA.DotNetCore.Engine.Targeting.Configuration;
 using QA.WidgetPlatform.Api.Application.Middleware;
 using QA.WidgetPlatform.Api.Infrastructure;
+using QA.WidgetPlatform.Api.Models;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("Init WP.API service");
@@ -24,6 +25,7 @@ try
         });
     });
 
+    builder.Services.Configure<FieldsSettings>(builder.Configuration.GetSection("FieldsSettings"));
     builder.Services.ConfigureBaseServices(builder.Configuration);
 
     builder.Services.AddTargeting();
