@@ -15,20 +15,20 @@ namespace QA.WidgetPlatform.Api.Models
         public bool Published { get; set; }
         public IDictionary<string, FieldInfo> Details { get; set; }
 
-        public SiteNodeDetails(UniversalAbstractItem item, IEnumerable<string>? includeFields = null)
+        public SiteNodeDetails(UniversalAbstractItem item, IEnumerable<string>? includeFields = null, bool includeNullFields = false)
         {
             Id = item.Id;
             Alias = item.Alias;
             NodeType = item.Type;
             Published = (bool)item.GetMetadata(OnScreenWidgetMetadataKeys.Published);
-            var untypedFields = item.GetUntypedFields();
+            var untypedFields = item.GetUntypedFields(includeNullFields);
             Details = new Dictionary<string, FieldInfo>(untypedFields.Count);
 
             var filteredDetailsFields = (includeFields is null || !includeFields.Any())
                 ? untypedFields.ExceptSystemNames()
                 : untypedFields.FilterByFieldNames(
                     new HashSet<string>(includeFields, StringComparer.OrdinalIgnoreCase));
-            
+
             foreach ((string fieldName, object fieldValue) in filteredDetailsFields)
             {
                 Details.Add(fieldName, new FieldInfo(fieldValue));

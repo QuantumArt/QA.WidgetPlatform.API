@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using QA.DotNetCore.Engine.Abstractions;
 using QA.DotNetCore.Engine.Abstractions.Targeting;
 using QA.DotNetCore.Engine.QpData;
@@ -16,16 +17,19 @@ namespace QA.WidgetPlatform.Api.Services
         private readonly ITargetingFilterAccessor _targetingFiltersAccessor;
         private readonly ITargetingContextUpdater _targetingUpdater;
         private readonly ILogger<SiteStructureService> _logger;
+        private readonly FieldsSettings _fieldsSettings;
 
         public SiteStructureService(IAbstractItemStorageProvider abstractItemStorageProvider,
             ITargetingFilterAccessor targetingFiltersAccessor,
             ITargetingContextUpdater targetingUpdater,
-        ILogger<SiteStructureService> logger)
+            ILogger<SiteStructureService> logger,
+            IOptions<FieldsSettings> fieldsSettings)
         {
             _abstractItemStorageProvider = abstractItemStorageProvider;
             _targetingFiltersAccessor = targetingFiltersAccessor;
             _targetingUpdater = targetingUpdater;
             _logger = logger;
+            _fieldsSettings = fieldsSettings.Value;
         }
 
         public void Warmup()
@@ -81,7 +85,7 @@ namespace QA.WidgetPlatform.Api.Services
         {
             var storage = _abstractItemStorageProvider.Get();
             _targetingUpdater.Update(targeting).Wait();
-            
+
             var startPageFilter = _targetingFiltersAccessor.Get(TargetingDestination.Structure);
             var nodeFilter = _targetingFiltersAccessor.Get(TargetingDestination.Nodes);
 
@@ -106,9 +110,14 @@ namespace QA.WidgetPlatform.Api.Services
             var node = storage.Get<UniversalAbstractItem>(nodeId);
 
             if (node == null)
+            {
                 throw new StatusCodeException(System.Net.HttpStatusCode.NotFound);
-
-            return new SiteNodeDetails(node);
+            }
+            else
+            {
+                bool includeNullFields = _fieldsSettings.IncludeNullFieldsInNode;
+                return new SiteNodeDetails(node, includeNullFields: includeNullFields);
+            }
         }
 
         /// <summary>
@@ -191,10 +200,10 @@ namespace QA.WidgetPlatform.Api.Services
         }
 
         private Dictionary<string, WidgetDetails[]> ChildWidgetsGroupedByZone(
-            IAbstractItem item, 
-            ITargetingFilter filter, 
-            bool fillDefinitionDetails, 
-            IEnumerable<string>? fields = null, 
+            IAbstractItem item,
+            ITargetingFilter filter,
+            bool fillDefinitionDetails,
+            IEnumerable<string>? fields = null,
             IEnumerable<string>? zones = null
         )
         {
