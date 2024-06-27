@@ -39,9 +39,14 @@ try
     app.UseRouting();
     app.UseCors();
     app.UseAuthorization();
-    app.UseSwaggerUI();
+
+    if (builder.Configuration.GetSection("UseSwagger").Get<bool>())
+    {
+        app.UseSwaggerUI();
+        app.MapSwagger();
+    }
+
     app.MapControllers();
-    app.MapSwagger();
     app.MapHealthChecks("/health");
 
     app.Run();
