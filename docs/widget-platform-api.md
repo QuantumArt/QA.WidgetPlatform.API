@@ -13,6 +13,8 @@
 
 ### Актуальная версия
 
+* Обновление nuget-пакета QA.DotNetCore.Engine.QpData.Configuration до версии 3.5.0
+
 ### 1.2.0.0
 
 * Обновление до .NET8
