@@ -22,6 +22,6 @@
     </PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="QA.DotNetCore.Engine.Targeting" Version="3.2.22" />
+    <PackageReference Include="QA.DotNetCore.Engine.Targeting" Version="3.5.0" />
   </ItemGroup>
 </Project>
