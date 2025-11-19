@@ -13,6 +13,12 @@
 
 ### Актуальная версия
 
+### 1.2.1.0
+
+* Обновлены nuget-пакеты
+* Обновление WidgetPlatform.Targeting до .NET8
+* Обновление nuget-пакета QA.DotNetCore.Engine.QpData.Configuration до версии 3.5.0
+
 ### 1.2.0.0
 
 * Обновление до .NET8
